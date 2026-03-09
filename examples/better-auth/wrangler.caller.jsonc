@@ -1,0 +1,9 @@
+{
+  "services": [
+    {
+      "binding": "AUTH_HASHER",
+      "service": "cloudflare-auth-hasher-template"
+    }
+  ]
+}
+

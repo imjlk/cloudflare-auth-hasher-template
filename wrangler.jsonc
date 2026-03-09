@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudflare-auth-hasher-template",
+  "main": "build/index.js",
+  "compatibility_date": "2026-03-09",
+  "workers_dev": true,
+  "build": {
+    "command": "cargo install -q \"worker-build@^0.7\" && worker-build --release"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true
+    }
+  }
+}
+
