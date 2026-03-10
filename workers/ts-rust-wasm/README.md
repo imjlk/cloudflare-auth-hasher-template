@@ -32,6 +32,7 @@ The TypeScript shell reads the shared `AUTH_HASHER_*` env vars through Wrangler 
 - `AUTH_HASHER_ARGON2_TIME_COST`
 - `AUTH_HASHER_ARGON2_PARALLELISM`
 - `AUTH_HASHER_ARGON2_OUTPUT_LENGTH`
+- `AUTH_HASHER_WORKER_CPU_MS`
 
 `GET /` returns the active preset ID and Argon2 settings for the deployed build.
 
@@ -51,6 +52,7 @@ The benchmark HTTP routes are for benchmarking and smoke checks. Normal Worker-t
 
 If you deploy a higher-cost preset on a Paid plan, `limits.cpu_ms` can help with pure CPU-budget failures, but the saved `standard-recommended` profiles in this repo show that Paid alone is not a full correctness guarantee.
 If you deploy on Workers Free, treat the lowered preset as a platform accommodation only. The benchmark evidence in this repository does not support calling the lowered Free-tier preset the preferred security baseline.
+When you later raise Argon2 cost, use `needsPasswordRehash()` from [`packages/client/src/index.ts`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/client/src/index.ts) to upgrade older hashes after successful login.
 
 ## Notes
 

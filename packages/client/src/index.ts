@@ -18,6 +18,19 @@ import {
   type VerifyBenchResult
 } from "@cloudflare-auth-hasher/contracts";
 
+export {
+  assessPasswordHash,
+  isOwaspAlignedPreset,
+  needsPasswordRehash,
+  parseStoredPasswordHash,
+  STANDARD_RECOMMENDED_PRESET
+} from "@cloudflare-auth-hasher/contracts";
+export type {
+  ParsedPasswordHash,
+  PasswordHashRehashAssessment,
+  PasswordHashUpgradeReason
+} from "@cloudflare-auth-hasher/contracts";
+
 export const isAuthHasherBinding = (value: unknown): value is AuthHasherBinding => {
   if (!value || typeof value !== "object") {
     return false;

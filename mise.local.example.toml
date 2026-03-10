@@ -13,6 +13,9 @@ AUTH_HASHER_ARGON2_TIME_COST = "3"
 AUTH_HASHER_ARGON2_PARALLELISM = "1"
 AUTH_HASHER_ARGON2_OUTPUT_LENGTH = "32"
 
+# Optional when moving to Workers Paid and testing a higher CPU budget:
+# AUTH_HASHER_WORKER_CPU_MS = "100"
+
 # Example low-cost probe for Cloudflare CPU-limit investigations:
 # AUTH_HASHER_PRESET_ID = "free-safe-probe"
 # AUTH_HASHER_ARGON2_MEMORY_KIB = "4096"

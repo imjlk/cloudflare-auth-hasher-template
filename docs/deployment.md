@@ -50,6 +50,7 @@ The deployment path also forwards optional hash-tuning vars:
 - `AUTH_HASHER_ARGON2_TIME_COST`
 - `AUTH_HASHER_ARGON2_PARALLELISM`
 - `AUTH_HASHER_ARGON2_OUTPUT_LENGTH`
+- `AUTH_HASHER_WORKER_CPU_MS`
 
 The workspace handles them in both places that matter:
 
@@ -57,6 +58,7 @@ The workspace handles them in both places that matter:
 - the Rust Worker and Rust Wasm kernel receive them through the build environment
 
 Because of that, one env change can retune all three baseline candidates together.
+If `AUTH_HASHER_WORKER_CPU_MS` is set, the deploy wrapper also injects `limits.cpu_ms` into the effective Wrangler config for that run.
 
 Example lower-cost probe for Cloudflare `1102` / CPU-limit investigations:
 
@@ -73,6 +75,26 @@ npm run deploy:workers -- --yes
 If you change the numeric values, also change `AUTH_HASHER_PRESET_ID` so benchmark scenario IDs and worker metadata stay honest.
 
 For higher-cost presets on Workers Paid, Cloudflare also allows a higher per-request CPU budget through `limits.cpu_ms`. See the official [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) page for the current plan defaults and caps. Keep that as a deploy-time tuning step, not a substitute for benchmark validation. The committed `standard-recommended` finalist profiles in this repo showed both CPU-limit failures and non-CPU runtime failures.
+
+Example Paid-oriented deploy:
+
+```bash
+export AUTH_HASHER_PRESET_ID=standard-recommended
+export AUTH_HASHER_ARGON2_MEMORY_KIB=12288
+export AUTH_HASHER_ARGON2_TIME_COST=3
+export AUTH_HASHER_ARGON2_PARALLELISM=1
+export AUTH_HASHER_ARGON2_OUTPUT_LENGTH=32
+export AUTH_HASHER_WORKER_CPU_MS=100
+
+npm run deploy:workers -- --yes
+```
+
+Recommended Free-to-Paid migration steps:
+
+1. Raise the preset from a lower-cost probe to your target preset.
+2. Set `AUTH_HASHER_WORKER_CPU_MS` only if you actually need more Worker CPU budget on Paid.
+3. Redeploy and verify the active metadata at `GET /`.
+4. Add `needsPasswordRehash()` in the caller so old hashes are upgraded after successful login.
 
 ## Commands
 

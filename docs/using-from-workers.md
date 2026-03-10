@@ -102,6 +102,60 @@ export default class AppWorker extends WorkerEntrypoint<Env> {
 
 If your app uses Better Auth, start from the adapter in [`packages/better-auth-adapter/README.md`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/better-auth-adapter/README.md). It prefers the `AUTH_HASHER` service binding when running on Workers and falls back to local Better Auth hashing outside Workers.
 
+## Rehash-on-login example
+
+If you start on a lower-cost preset and later move to a stronger preset, existing hashes still verify because Argon2 stores its parameters in the PHC string. The part you still need is rehash-on-login.
+
+```ts
+import type { AuthHasherBinding } from "@cloudflare-auth-hasher/contracts";
+import {
+  STANDARD_RECOMMENDED_PRESET,
+  ensureAuthHasherBinding,
+  needsPasswordRehash
+} from "@cloudflare-auth-hasher/client";
+
+type Env = {
+  AUTH_HASHER: AuthHasherBinding;
+};
+
+async function verifyAndUpgradePassword(
+  env: Env,
+  storedHash: string,
+  password: string,
+  persistNextHash: (hash: string) => Promise<void>
+): Promise<boolean> {
+  const hasher = ensureAuthHasherBinding(env, "AUTH_HASHER");
+  const verified = await hasher.verifyPassword(storedHash, password);
+
+  if (!verified) {
+    return false;
+  }
+
+  if (needsPasswordRehash(storedHash, STANDARD_RECOMMENDED_PRESET)) {
+    const nextHash = await hasher.hashPassword(password);
+    await persistNextHash(nextHash);
+  }
+
+  return true;
+}
+```
+
+`needsPasswordRehash()` returns `true` for:
+
+- legacy Better Auth `salt:key` scrypt hashes
+- Argon2 hashes that are below the current target preset
+- Argon2 hashes with a different stored version than the current repository baseline
+
+## Free-to-Paid transition checklist
+
+When moving a deployment from Workers Free to Workers Paid:
+
+1. Raise the target preset from a lower-cost probe to `standard-recommended` or your new target.
+2. Optionally set `AUTH_HASHER_WORKER_CPU_MS` before deploy if you need a higher Worker CPU budget on Paid.
+3. Redeploy the hasher Worker and the caller Worker.
+4. Keep verification backward-compatible by calling `verifyPassword()` against stored hashes as-is.
+5. Add `needsPasswordRehash()` after successful verification so old hashes are upgraded gradually on login.
+
 ## Operational guidance
 
 - Use `GET /` on the deployed hasher Worker to verify the active preset and Argon2 parameters after deploy.

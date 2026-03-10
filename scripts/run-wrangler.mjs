@@ -9,12 +9,14 @@ const RUNTIME_VAR_KEYS = [
   "AUTH_HASHER_ARGON2_PARALLELISM",
   "AUTH_HASHER_ARGON2_OUTPUT_LENGTH"
 ];
+const WORKER_CPU_LIMIT_KEY = "AUTH_HASHER_WORKER_CPU_MS";
 
 const POSITIVE_INTEGER_KEYS = new Set([
   "AUTH_HASHER_ARGON2_MEMORY_KIB",
   "AUTH_HASHER_ARGON2_TIME_COST",
   "AUTH_HASHER_ARGON2_PARALLELISM",
-  "AUTH_HASHER_ARGON2_OUTPUT_LENGTH"
+  "AUTH_HASHER_ARGON2_OUTPUT_LENGTH",
+  WORKER_CPU_LIMIT_KEY
 ]);
 
 const parseArgs = (argv) => {
@@ -49,7 +51,21 @@ const readRuntimeVars = () => {
   return vars;
 };
 
-const createConfigOverride = async (configPath, runtimeVars) => {
+const readWorkerCpuLimit = () => {
+  const value = process.env[WORKER_CPU_LIMIT_KEY]?.trim();
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${WORKER_CPU_LIMIT_KEY} must be a positive integer. Received '${value}'.`);
+  }
+
+  return parsed;
+};
+
+const createConfigOverride = async (configPath, runtimeVars, workerCpuLimit) => {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
   const configText = await readFile(resolvedConfigPath, "utf8");
   const config = JSON.parse(configText);
@@ -63,6 +79,13 @@ const createConfigOverride = async (configPath, runtimeVars) => {
     ...runtimeVars
   };
 
+  if (workerCpuLimit !== null) {
+    config.limits = {
+      ...(config.limits ?? {}),
+      cpu_ms: workerCpuLimit
+    };
+  }
+
   await writeFile(tempConfigPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
   return { tempConfigPath };
 };
@@ -71,10 +94,11 @@ const main = async () => {
   const args = process.argv.slice(2);
   const { configIndex, configPath } = parseArgs(args);
   const runtimeVars = readRuntimeVars();
+  const workerCpuLimit = readWorkerCpuLimit();
 
   let cleanup = async () => {};
-  if (Object.keys(runtimeVars).length > 0) {
-    const { tempConfigPath } = await createConfigOverride(configPath, runtimeVars);
+  if (Object.keys(runtimeVars).length > 0 || workerCpuLimit !== null) {
+    const { tempConfigPath } = await createConfigOverride(configPath, runtimeVars, workerCpuLimit);
     args[configIndex + 1] = tempConfigPath;
     cleanup = async () => {
       await rm(tempConfigPath, { force: true });

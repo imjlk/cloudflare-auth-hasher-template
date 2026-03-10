@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createCandidateFetchHandler } from "./index";
+import { createCandidateFetchHandler, needsPasswordRehash, STANDARD_RECOMMENDED_PRESET } from "./index";
 
 describe("createCandidateFetchHandler", () => {
   const fetchHandler = createCandidateFetchHandler({
@@ -108,5 +108,11 @@ describe("createCandidateFetchHandler", () => {
     expect((await verify.json()) as { result: { verified: boolean } }).toMatchObject({
       result: { verified: true }
     });
+  });
+
+  it("re-exports hash upgrade helpers", () => {
+    const lowerCostHash =
+      "$argon2id$v=19$m=4096,t=1,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
+    expect(needsPasswordRehash(lowerCostHash, STANDARD_RECOMMENDED_PRESET)).toBe(true);
   });
 });

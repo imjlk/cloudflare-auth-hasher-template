@@ -1,4 +1,7 @@
 const encoder = new TextEncoder();
+const ARGON2_VERSION = 19;
+const ARGON2_PHC_REGEX =
+  /^\$(argon2id)\$v=(\d+)\$m=(\d+),t=(\d+),p=(\d+)\$([A-Za-z0-9+/.-]+)\$([A-Za-z0-9+/.-]+)$/;
 
 export const BASELINE_CANDIDATES = ["ts-direct", "ts-rust-wasm", "rust-full"] as const;
 export const OPTIONAL_CANDIDATES = ["assemblyscript-probe"] as const;
@@ -54,6 +57,38 @@ export interface HashPresetDefinition {
   description: string;
   argon2id: Argon2idConfig;
   legacyScrypt: LegacyScryptConfig;
+}
+
+export type PasswordHashFormat = "argon2id" | "legacy-scrypt";
+
+export type PasswordHashUpgradeReason =
+  | "legacy-scrypt-format"
+  | "argon2-version"
+  | "argon2-memory"
+  | "argon2-iterations"
+  | "argon2-parallelism"
+  | "argon2-output-length";
+
+export interface ParsedArgon2PasswordHash {
+  format: "argon2id";
+  version: number;
+  argon2id: Argon2idConfig;
+  saltBase64: string;
+  hashBase64: string;
+}
+
+export interface ParsedLegacyScryptPasswordHash {
+  format: "legacy-scrypt";
+  salt: string;
+  keyHex: string;
+}
+
+export type ParsedPasswordHash = ParsedArgon2PasswordHash | ParsedLegacyScryptPasswordHash;
+
+export interface PasswordHashRehashAssessment {
+  parsed: ParsedPasswordHash;
+  needsRehash: boolean;
+  reasons: PasswordHashUpgradeReason[];
 }
 
 export interface AuthHasherRuntimeEnv {
@@ -149,6 +184,105 @@ export const resolveHasherPreset = (
     },
     legacyScrypt: { ...STANDARD_RECOMMENDED_PRESET.legacyScrypt }
   };
+};
+
+const base64NoPadByteLength = (value: string): number => {
+  const remainder = value.length % 4;
+  const padding = remainder === 0 ? 0 : 4 - remainder;
+  return ((value.length + padding) * 3) / 4 - padding;
+};
+
+export const parseStoredPasswordHash = (hash: string): ParsedPasswordHash => {
+  const argonMatch = ARGON2_PHC_REGEX.exec(hash);
+  if (argonMatch) {
+    const [, algorithm, version, memoryKiB, iterations, parallelism, saltBase64, hashBase64] = argonMatch;
+    if (algorithm !== "argon2id") {
+      throw new Error(`Unsupported Argon2 variant '${algorithm}'.`);
+    }
+
+    return {
+      format: "argon2id",
+      version: Number(version),
+      argon2id: {
+        memoryKiB: Number(memoryKiB),
+        iterations: Number(iterations),
+        parallelism: Number(parallelism),
+        outputLength: base64NoPadByteLength(hashBase64)
+      },
+      saltBase64,
+      hashBase64
+    };
+  }
+
+  const legacyScrypt = hash.split(":");
+  if (legacyScrypt.length === 2 && legacyScrypt[0] && legacyScrypt[1]) {
+    return {
+      format: "legacy-scrypt",
+      salt: legacyScrypt[0],
+      keyHex: legacyScrypt[1]
+    };
+  }
+
+  throw new Error("Unsupported password hash format.");
+};
+
+export const assessPasswordHash = (
+  hash: string,
+  targetPreset: HashPresetDefinition = STANDARD_RECOMMENDED_PRESET
+): PasswordHashRehashAssessment => {
+  const parsed = parseStoredPasswordHash(hash);
+  const reasons: PasswordHashUpgradeReason[] = [];
+
+  if (parsed.format === "legacy-scrypt") {
+    reasons.push("legacy-scrypt-format");
+    return {
+      parsed,
+      needsRehash: true,
+      reasons
+    };
+  }
+
+  if (parsed.version !== ARGON2_VERSION) {
+    reasons.push("argon2-version");
+  }
+
+  if (parsed.argon2id.memoryKiB < targetPreset.argon2id.memoryKiB) {
+    reasons.push("argon2-memory");
+  }
+
+  if (parsed.argon2id.iterations < targetPreset.argon2id.iterations) {
+    reasons.push("argon2-iterations");
+  }
+
+  if (parsed.argon2id.parallelism < targetPreset.argon2id.parallelism) {
+    reasons.push("argon2-parallelism");
+  }
+
+  if (parsed.argon2id.outputLength < targetPreset.argon2id.outputLength) {
+    reasons.push("argon2-output-length");
+  }
+
+  return {
+    parsed,
+    needsRehash: reasons.length > 0,
+    reasons
+  };
+};
+
+export const needsPasswordRehash = (
+  hash: string,
+  targetPreset: HashPresetDefinition = STANDARD_RECOMMENDED_PRESET
+): boolean => {
+  return assessPasswordHash(hash, targetPreset).needsRehash;
+};
+
+export const isOwaspAlignedPreset = (preset: HashPresetDefinition): boolean => {
+  return (
+    preset.argon2id.memoryKiB >= STANDARD_RECOMMENDED_PRESET.argon2id.memoryKiB &&
+    preset.argon2id.iterations >= STANDARD_RECOMMENDED_PRESET.argon2id.iterations &&
+    preset.argon2id.parallelism >= STANDARD_RECOMMENDED_PRESET.argon2id.parallelism &&
+    preset.argon2id.outputLength >= STANDARD_RECOMMENDED_PRESET.argon2id.outputLength
+  );
 };
 
 type CharsetKind = "ascii" | "utf8";

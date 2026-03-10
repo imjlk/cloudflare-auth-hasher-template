@@ -183,6 +183,7 @@ All baseline candidates now read the same optional environment knobs:
 - `AUTH_HASHER_ARGON2_TIME_COST`
 - `AUTH_HASHER_ARGON2_PARALLELISM`
 - `AUTH_HASHER_ARGON2_OUTPUT_LENGTH`
+- `AUTH_HASHER_WORKER_CPU_MS`
 
 These values are consumed in two places:
 
@@ -206,6 +207,9 @@ npm run deploy:workers -- --yes
 Use that lower-cost probe only when you are validating what can survive on Workers Free. It should not replace the repository's `standard-recommended` preset for deployments that need an OWASP-aligned baseline.
 
 After deploy, each direct candidate exposes its active preset and Argon2 parameters at `/`, so you can verify the effective config with `curl`.
+When `AUTH_HASHER_WORKER_CPU_MS` is set, the deploy wrapper also injects `limits.cpu_ms` for that deploy. This is mainly useful when moving from Workers Free to Workers Paid.
+
+If you raise Argon2 cost later, existing hashes still verify. Use `needsPasswordRehash()` from [`packages/client/src/index.ts`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/client/src/index.ts) or [`packages/contracts/src/index.ts`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/contracts/src/index.ts) to implement `rehash-on-login` for old hashes.
 
 ## Running the candidates locally
 

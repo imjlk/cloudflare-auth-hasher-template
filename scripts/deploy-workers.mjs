@@ -45,6 +45,7 @@ Runtime tuning:
   That means the same env values reach:
   - Wrangler "vars" for TypeScript Workers
   - Rust builds for rust-full and the Rust Wasm kernel
+  - Wrangler "limits.cpu_ms" when AUTH_HASHER_WORKER_CPU_MS is set
 
   If either variable is missing and the terminal is interactive, the script will prompt for it.
   In non-interactive mode, both values must be provided via flags or environment variables.

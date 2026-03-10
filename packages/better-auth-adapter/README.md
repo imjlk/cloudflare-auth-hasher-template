@@ -12,6 +12,12 @@ Recommended Worker-to-Worker integration guide:
 
 - [`docs/using-from-workers.md`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/docs/using-from-workers.md)
 
+Note:
+
+- This adapter keeps `hash()` and `verify()` wired to the hasher Worker.
+- It does not automatically perform `rehash-on-login` when you raise Argon2 cost later.
+- Use `needsPasswordRehash()` from [`@cloudflare-auth-hasher/client`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/client/src/index.ts) in your post-login flow if you want gradual hash upgrades.
+
 ## Example
 
 ```ts
