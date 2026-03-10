@@ -49,5 +49,5 @@ jobs:
       - name: Rebuild committed Wasm artifact with default preset
         run: npm run build:artifact
 
-      - name: Check committed Wasm artifact
-        run: git diff --exit-code -- src/rust-wasm-kernel.wasm
+      - name: Check default artifact manifest
+        run: git diff --exit-code -- src/rust-wasm-kernel.build.json

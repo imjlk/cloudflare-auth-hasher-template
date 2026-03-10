@@ -58,7 +58,7 @@ npm run dev
 The root `build` step rebuilds the Rust/Wasm kernel first. If `cargo` is unavailable, it falls back to the committed [src/rust-wasm-kernel.wasm](../src/rust-wasm-kernel.wasm). That fallback keeps the Deploy Button path usable even when the deploy environment does not rebuild Rust sources.
 
 If you change Rust code in [crates/hash-core](../crates/hash-core) or [crates/rust-wasm-kernel](../crates/rust-wasm-kernel), rebuild locally with Rust installed before committing.
-If your shell has `AUTH_HASHER_*` overrides set, `npm run build` compiles a matching custom kernel. Use `npm run build:artifact` before commit to restore the committed default artifact for `standard-2026q1`.
+If your shell has `AUTH_HASHER_*` overrides set, `npm run build` compiles a matching custom kernel. Use `npm run build:artifact` before commit to restore the committed default artifact for `standard-2026q1` and refresh the tracked build manifest.
 
 ## 4. Preset Selection
 

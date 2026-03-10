@@ -1,0 +1,14 @@
+{
+  "artifactPreset": "standard-2026q1",
+  "artifactSourceChecksum": "e4b470265365e80cbb01d1778e571a8c9c1a116b4569f8c55d17b1fcb2d00028",
+  "generatedBy": "npm run build:artifact",
+  "inputs": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "crates/hash-core/Cargo.toml",
+    "crates/hash-core/src/lib.rs",
+    "crates/rust-wasm-kernel/Cargo.toml",
+    "crates/rust-wasm-kernel/src/lib.rs",
+    "scripts/build-kernel.mjs"
+  ]
+}

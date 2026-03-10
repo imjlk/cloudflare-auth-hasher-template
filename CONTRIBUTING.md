@@ -42,7 +42,7 @@ then:
 CI verifies:
 
 - `worker-configuration.d.ts` is up to date
-- the committed Wasm artifact matches a fresh Rust build
+- the default artifact build manifest matches the current Rust source set
 - the example Workers still pass `wrangler deploy --dry-run`
 
 ## Documentation Expectations

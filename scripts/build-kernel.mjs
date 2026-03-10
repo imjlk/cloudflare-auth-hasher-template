@@ -1,6 +1,7 @@
-import { access, copyFile } from "node:fs/promises";
+import { access, copyFile, readFile, writeFile } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 const ROOT = process.cwd();
@@ -21,6 +22,16 @@ const BUILT_WASM_PATH = path.join(
   "rust_wasm_kernel.wasm"
 );
 const COMMITTED_WASM_PATH = path.join(ROOT, "src", "rust-wasm-kernel.wasm");
+const BUILD_MANIFEST_PATH = path.join(ROOT, "src", "rust-wasm-kernel.build.json");
+const BUILD_MANIFEST_INPUTS = [
+  "Cargo.lock",
+  "Cargo.toml",
+  "crates/hash-core/Cargo.toml",
+  "crates/hash-core/src/lib.rs",
+  "crates/rust-wasm-kernel/Cargo.toml",
+  "crates/rust-wasm-kernel/src/lib.rs",
+  "scripts/build-kernel.mjs"
+];
 const ignoreAuthHasherEnv = process.argv.includes("--ignore-auth-hasher-env");
 
 const fileExists = async (filePath) => {
@@ -43,6 +54,32 @@ const createBuildEnv = () => {
   }
 
   return nextEnv;
+};
+
+const createSourceChecksum = async () => {
+  const hash = createHash("sha256");
+
+  for (const relativePath of BUILD_MANIFEST_INPUTS) {
+    const absolutePath = path.join(ROOT, relativePath);
+    const contents = await readFile(absolutePath);
+    hash.update(`${relativePath}\n`);
+    hash.update(contents);
+    hash.update("\n");
+  }
+
+  return hash.digest("hex");
+};
+
+const writeBuildManifest = async () => {
+  const sourceChecksum = await createSourceChecksum();
+  const payload = {
+    artifactPreset: "standard-2026q1",
+    artifactSourceChecksum: sourceChecksum,
+    generatedBy: "npm run build:artifact",
+    inputs: BUILD_MANIFEST_INPUTS
+  };
+
+  await writeFile(BUILD_MANIFEST_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
 };
 
 const runCommand = async (command, args, env) => {
@@ -98,6 +135,9 @@ const main = async () => {
       "--release"
     ], buildEnv);
     await copyFile(BUILT_WASM_PATH, COMMITTED_WASM_PATH);
+    if (ignoreAuthHasherEnv) {
+      await writeBuildManifest();
+    }
     return;
   }
 
