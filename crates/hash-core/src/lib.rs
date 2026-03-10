@@ -7,12 +7,17 @@ use scrypt::{scrypt, Params as ScryptParams};
 use subtle::ConstantTimeEq;
 use unicode_normalization::UnicodeNormalization;
 
-pub const DEFAULT_PRESET_ID: &str = "standard-recommended";
+pub const DEFAULT_PRESET_ID: &str = "standard-2026q1";
+pub const FREE_TIER_FALLBACK_PRESET_ID: &str = "free-tier-fallback-2026q1";
 pub const ENV_TUNED_PRESET_ID: &str = "env-tuned";
 pub const DEFAULT_ARGON2_MEMORY_KIB: u32 = 12 * 1024;
 pub const DEFAULT_ARGON2_TIME_COST: u32 = 3;
 pub const DEFAULT_ARGON2_PARALLELISM: u32 = 1;
 pub const DEFAULT_ARGON2_OUTPUT_LEN: usize = 32;
+pub const FREE_TIER_ARGON2_MEMORY_KIB: u32 = 4 * 1024;
+pub const FREE_TIER_ARGON2_TIME_COST: u32 = 1;
+pub const FREE_TIER_ARGON2_PARALLELISM: u32 = 1;
+pub const FREE_TIER_ARGON2_OUTPUT_LEN: usize = 32;
 
 const LEGACY_SCRYPT_LOG_N: u8 = 14;
 const LEGACY_SCRYPT_R: u32 = 16;
@@ -39,9 +44,32 @@ pub fn runtime_preset() -> std::result::Result<RuntimePreset, String> {
 		|| option_env!("AUTH_HASHER_ARGON2_OUTPUT_LENGTH").is_some();
 
 	let preset_id = match option_env!("AUTH_HASHER_PRESET_ID").map(str::trim) {
+		Some("standard-recommended") => DEFAULT_PRESET_ID,
+		Some("free-safe-probe") => FREE_TIER_FALLBACK_PRESET_ID,
 		Some(value) if !value.is_empty() => value,
 		_ if has_argon_overrides => ENV_TUNED_PRESET_ID,
 		_ => DEFAULT_PRESET_ID,
+	};
+
+	let (
+		default_memory_kib,
+		default_time_cost,
+		default_parallelism,
+		default_output_len,
+	) = if preset_id == FREE_TIER_FALLBACK_PRESET_ID {
+		(
+			FREE_TIER_ARGON2_MEMORY_KIB,
+			FREE_TIER_ARGON2_TIME_COST,
+			FREE_TIER_ARGON2_PARALLELISM,
+			FREE_TIER_ARGON2_OUTPUT_LEN,
+		)
+	} else {
+		(
+			DEFAULT_ARGON2_MEMORY_KIB,
+			DEFAULT_ARGON2_TIME_COST,
+			DEFAULT_ARGON2_PARALLELISM,
+			DEFAULT_ARGON2_OUTPUT_LEN,
+		)
 	};
 
 	Ok(RuntimePreset {
@@ -49,22 +77,22 @@ pub fn runtime_preset() -> std::result::Result<RuntimePreset, String> {
 		argon2_memory_kib: parse_u32_env(
 			"AUTH_HASHER_ARGON2_MEMORY_KIB",
 			option_env!("AUTH_HASHER_ARGON2_MEMORY_KIB"),
-			DEFAULT_ARGON2_MEMORY_KIB,
+			default_memory_kib,
 		)?,
 		argon2_time_cost: parse_u32_env(
 			"AUTH_HASHER_ARGON2_TIME_COST",
 			option_env!("AUTH_HASHER_ARGON2_TIME_COST"),
-			DEFAULT_ARGON2_TIME_COST,
+			default_time_cost,
 		)?,
 		argon2_parallelism: parse_u32_env(
 			"AUTH_HASHER_ARGON2_PARALLELISM",
 			option_env!("AUTH_HASHER_ARGON2_PARALLELISM"),
-			DEFAULT_ARGON2_PARALLELISM,
+			default_parallelism,
 		)?,
 		argon2_output_len: parse_usize_env(
 			"AUTH_HASHER_ARGON2_OUTPUT_LENGTH",
 			option_env!("AUTH_HASHER_ARGON2_OUTPUT_LENGTH"),
-			DEFAULT_ARGON2_OUTPUT_LEN,
+			default_output_len,
 		)?,
 	})
 }

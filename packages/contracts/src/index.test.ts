@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  AUTH_HASHER_PRESET_IDS,
   assessPasswordHash,
-  ENV_TUNED_BENCH_PRESET_ID,
+  canonicalizePresetId,
+  FREE_TIER_FALLBACK_2026Q1_PRESET,
   isOwaspAlignedPreset,
   needsPasswordRehash,
-  STANDARD_RECOMMENDED_PRESET,
+  STANDARD_2026Q1_PRESET,
   resolveHasherPreset
 } from "./index";
 
@@ -29,38 +31,36 @@ const createArgon2HashFixture = ({
 };
 
 describe("resolveHasherPreset", () => {
-  it("returns the standard preset when no env overrides are present", () => {
-    expect(resolveHasherPreset(undefined)).toEqual(STANDARD_RECOMMENDED_PRESET);
+  it("returns the canonical standard preset when no env overrides are present", () => {
+    expect(resolveHasherPreset(undefined)).toEqual(STANDARD_2026Q1_PRESET);
+  });
+
+  it("normalizes the legacy standard preset alias", () => {
+    const preset = resolveHasherPreset({
+      AUTH_HASHER_PRESET_ID: "standard-recommended"
+    });
+
+    expect(preset.id).toBe(AUTH_HASHER_PRESET_IDS.standard2026Q1);
+    expect(preset.argon2id).toEqual(STANDARD_2026Q1_PRESET.argon2id);
+  });
+
+  it("normalizes the legacy free-tier alias", () => {
+    const preset = resolveHasherPreset({
+      AUTH_HASHER_PRESET_ID: "free-safe-probe"
+    });
+
+    expect(preset).toEqual(FREE_TIER_FALLBACK_2026Q1_PRESET);
   });
 
   it("derives an env-tuned preset id when argon settings are overridden without an explicit id", () => {
     const preset = resolveHasherPreset({
-      AUTH_HASHER_ARGON2_MEMORY_KIB: "4096",
-      AUTH_HASHER_ARGON2_TIME_COST: "1"
+      AUTH_HASHER_ARGON2_MEMORY_KIB: "8192",
+      AUTH_HASHER_ARGON2_TIME_COST: "2"
     });
 
-    expect(preset.id).toBe(ENV_TUNED_BENCH_PRESET_ID);
-    expect(preset.argon2id.memoryKiB).toBe(4096);
-    expect(preset.argon2id.iterations).toBe(1);
-    expect(preset.argon2id.parallelism).toBe(STANDARD_RECOMMENDED_PRESET.argon2id.parallelism);
-  });
-
-  it("uses an explicit preset id when provided", () => {
-    const preset = resolveHasherPreset({
-      AUTH_HASHER_PRESET_ID: "free-safe-probe",
-      AUTH_HASHER_ARGON2_MEMORY_KIB: "4096",
-      AUTH_HASHER_ARGON2_TIME_COST: "1",
-      AUTH_HASHER_ARGON2_PARALLELISM: "1",
-      AUTH_HASHER_ARGON2_OUTPUT_LENGTH: "32"
-    });
-
-    expect(preset.id).toBe("free-safe-probe");
-    expect(preset.argon2id).toEqual({
-      memoryKiB: 4096,
-      iterations: 1,
-      parallelism: 1,
-      outputLength: 32
-    });
+    expect(preset.id).toBe(AUTH_HASHER_PRESET_IDS.envTuned);
+    expect(preset.argon2id.memoryKiB).toBe(8192);
+    expect(preset.argon2id.iterations).toBe(2);
   });
 
   it("rejects invalid numeric overrides", () => {
@@ -72,13 +72,20 @@ describe("resolveHasherPreset", () => {
   });
 });
 
+describe("canonicalizePresetId", () => {
+  it("maps known aliases to canonical values", () => {
+    expect(canonicalizePresetId("standard-recommended")).toBe(AUTH_HASHER_PRESET_IDS.standard2026Q1);
+    expect(canonicalizePresetId("free-safe-probe")).toBe(AUTH_HASHER_PRESET_IDS.freeTierFallback2026Q1);
+  });
+});
+
 describe("password hash assessment helpers", () => {
   it("does not request a rehash for the standard baseline", () => {
     const hash = createArgon2HashFixture({
-      memoryKiB: STANDARD_RECOMMENDED_PRESET.argon2id.memoryKiB,
-      iterations: STANDARD_RECOMMENDED_PRESET.argon2id.iterations,
-      parallelism: STANDARD_RECOMMENDED_PRESET.argon2id.parallelism,
-      outputLength: STANDARD_RECOMMENDED_PRESET.argon2id.outputLength
+      memoryKiB: STANDARD_2026Q1_PRESET.argon2id.memoryKiB,
+      iterations: STANDARD_2026Q1_PRESET.argon2id.iterations,
+      parallelism: STANDARD_2026Q1_PRESET.argon2id.parallelism,
+      outputLength: STANDARD_2026Q1_PRESET.argon2id.outputLength
     });
 
     expect(needsPasswordRehash(hash)).toBe(false);
@@ -111,34 +118,18 @@ describe("password hash assessment helpers", () => {
   });
 
   it("does not require a rehash when the stored Argon2 cost already exceeds the target", () => {
-    const target = resolveHasherPreset({
-      AUTH_HASHER_PRESET_ID: "free-safe-probe",
-      AUTH_HASHER_ARGON2_MEMORY_KIB: "4096",
-      AUTH_HASHER_ARGON2_TIME_COST: "1",
-      AUTH_HASHER_ARGON2_PARALLELISM: "1",
-      AUTH_HASHER_ARGON2_OUTPUT_LENGTH: "32"
-    });
-
     const strongerHash = createArgon2HashFixture({
-      memoryKiB: STANDARD_RECOMMENDED_PRESET.argon2id.memoryKiB,
-      iterations: STANDARD_RECOMMENDED_PRESET.argon2id.iterations,
-      parallelism: STANDARD_RECOMMENDED_PRESET.argon2id.parallelism,
-      outputLength: STANDARD_RECOMMENDED_PRESET.argon2id.outputLength
+      memoryKiB: STANDARD_2026Q1_PRESET.argon2id.memoryKiB,
+      iterations: STANDARD_2026Q1_PRESET.argon2id.iterations,
+      parallelism: STANDARD_2026Q1_PRESET.argon2id.parallelism,
+      outputLength: STANDARD_2026Q1_PRESET.argon2id.outputLength
     });
 
-    expect(needsPasswordRehash(strongerHash, target)).toBe(false);
+    expect(needsPasswordRehash(strongerHash, FREE_TIER_FALLBACK_2026Q1_PRESET)).toBe(false);
   });
 
-  it("marks the standard preset as OWASP-aligned and lower-cost probes as not aligned", () => {
-    const freeSafeProbe = resolveHasherPreset({
-      AUTH_HASHER_PRESET_ID: "free-safe-probe",
-      AUTH_HASHER_ARGON2_MEMORY_KIB: "4096",
-      AUTH_HASHER_ARGON2_TIME_COST: "1",
-      AUTH_HASHER_ARGON2_PARALLELISM: "1",
-      AUTH_HASHER_ARGON2_OUTPUT_LENGTH: "32"
-    });
-
-    expect(isOwaspAlignedPreset(STANDARD_RECOMMENDED_PRESET)).toBe(true);
-    expect(isOwaspAlignedPreset(freeSafeProbe)).toBe(false);
+  it("marks the standard preset as OWASP-aligned and the free-tier fallback as not aligned", () => {
+    expect(isOwaspAlignedPreset(STANDARD_2026Q1_PRESET)).toBe(true);
+    expect(isOwaspAlignedPreset(FREE_TIER_FALLBACK_2026Q1_PRESET)).toBe(false);
   });
 });

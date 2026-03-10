@@ -1,8 +1,7 @@
 [workspace]
 members = [
   "crates/hash-core",
-  "crates/rust-wasm-kernel",
-  "workers/rust-full"
+  "crates/rust-wasm-kernel"
 ]
 resolver = "2"
 

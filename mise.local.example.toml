@@ -2,12 +2,7 @@
 CLOUDFLARE_ACCOUNT_ID = "replace-with-your-cloudflare-account-id"
 CLOUDFLARE_API_TOKEN = "replace-with-your-cloudflare-api-token"
 
-TS_DIRECT_URL = "https://auth-hasher-ts-direct.<subdomain>.workers.dev"
-TS_RUST_WASM_URL = "https://auth-hasher-ts-rust-wasm.<subdomain>.workers.dev"
-RUST_FULL_URL = "https://auth-hasher-rust-full.<subdomain>.workers.dev"
-BINDING_GATEWAY_URL = "https://auth-hasher-binding-gateway.<subdomain>.workers.dev"
-
-AUTH_HASHER_PRESET_ID = "standard-recommended"
+AUTH_HASHER_PRESET_ID = "standard-2026q1"
 AUTH_HASHER_ARGON2_MEMORY_KIB = "12288"
 AUTH_HASHER_ARGON2_TIME_COST = "3"
 AUTH_HASHER_ARGON2_PARALLELISM = "1"
@@ -16,9 +11,13 @@ AUTH_HASHER_ARGON2_OUTPUT_LENGTH = "32"
 # Optional when moving to Workers Paid and testing a higher CPU budget:
 # AUTH_HASHER_WORKER_CPU_MS = "100"
 
-# Example low-cost probe for Cloudflare CPU-limit investigations:
-# AUTH_HASHER_PRESET_ID = "free-safe-probe"
+# Example Workers Free fallback:
+# AUTH_HASHER_PRESET_ID = "free-tier-fallback-2026q1"
 # AUTH_HASHER_ARGON2_MEMORY_KIB = "4096"
 # AUTH_HASHER_ARGON2_TIME_COST = "1"
 # AUTH_HASHER_ARGON2_PARALLELISM = "1"
 # AUTH_HASHER_ARGON2_OUTPUT_LENGTH = "32"
+
+# Legacy aliases are still accepted for input compatibility:
+#   standard-recommended -> standard-2026q1
+#   free-safe-probe -> free-tier-fallback-2026q1

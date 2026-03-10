@@ -1,118 +1,123 @@
-import { describe, expect, it } from "vitest";
-import { createCandidateFetchHandler, needsPasswordRehash, STANDARD_RECOMMENDED_PRESET } from "./index";
+import { describe, expect, it, vi } from "vitest";
+import {
+  ensureAuthHasherBinding,
+  isAuthHasherBinding,
+  needsPasswordRehash,
+  STANDARD_2026Q1_PRESET,
+  verifyAndMaybeRehash
+} from "./index";
 
-describe("createCandidateFetchHandler", () => {
-  const fetchHandler = createCandidateFetchHandler({
-    candidate: "ts-direct",
-    resolvePreset(env) {
-      return env?.AUTH_HASHER_PRESET_ID
-        ? {
-            id: env.AUTH_HASHER_PRESET_ID,
-            description: "test",
-            argon2id: {
-              memoryKiB: 4096,
-              iterations: 1,
-              parallelism: 1,
-              outputLength: 32
-            },
-            legacyScrypt: {
-              logN: 14,
-              r: 16,
-              p: 1,
-              outputLength: 64
-            }
-          }
-        : {
-            id: "standard-recommended",
-            description: "test",
-            argon2id: {
-              memoryKiB: 12 * 1024,
-              iterations: 3,
-              parallelism: 1,
-              outputLength: 32
-            },
-            legacyScrypt: {
-              logN: 14,
-              r: 16,
-              p: 1,
-              outputLength: 64
-            }
-          };
-    },
-    async hashPassword(password) {
+describe("binding helpers", () => {
+  const binding = {
+    async hashPassword(password: string) {
       return `hash:${password}`;
     },
-    async verifyPassword(hash, password) {
+    async verifyPassword(hash: string, password: string) {
       return hash === `hash:${password}`;
+    },
+    async fetch() {
+      return new Response("ok");
     }
+  };
+
+  it("detects a valid auth hasher binding", () => {
+    expect(isAuthHasherBinding(binding)).toBe(true);
+    expect(isAuthHasherBinding({})).toBe(false);
   });
 
-  it("serves the benchmark metadata route", async () => {
-    const response = await fetchHandler(new Request("https://example.com/"), {
-      AUTH_HASHER_PRESET_ID: "free-safe-probe"
-    });
-    const payload = (await response.json()) as { candidate: string; preset: string };
-    expect(response.status).toBe(200);
-    expect(payload.candidate).toBe("ts-direct");
-    expect(payload.preset).toBe("free-safe-probe");
+  it("throws when the binding is missing", () => {
+    expect(() => ensureAuthHasherBinding(undefined)).toThrow("Missing AUTH_HASHER service binding.");
   });
+});
 
-  it("serves noop, hash, and verify routes", async () => {
-    const noop = await fetchHandler(
-      new Request(
-        "https://example.com/_bench/noop?scenarioId=s1&candidate=ts-direct&path=direct&track=parity&preset=standard-recommended&inputId=ascii-12&concurrency=1"
-      )
-    );
-    expect(noop.status).toBe(200);
-    expect((await noop.json()) as { ok: boolean }).toMatchObject({ ok: true });
+describe("verifyAndMaybeRehash", () => {
+  const hasher = {
+    async hashPassword(password: string) {
+      return `next:${password}`;
+    },
+    async verifyPassword(hash: string, password: string) {
+      return hash === `hash:${password}` || hash === "legacy-salt:deadbeef";
+    }
+  };
 
-    const hash = await fetchHandler(
-      new Request("https://example.com/_bench/hash", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          scenarioId: "s2",
-          candidate: "ts-direct",
-          path: "direct",
-          track: "parity",
-          preset: "standard-recommended",
-          inputId: "ascii-12",
-          concurrency: 1,
-          password: "secret"
-        })
-      })
-    );
-    expect(hash.status).toBe(200);
-    expect((await hash.json()) as { result: { hash: string } }).toMatchObject({
-      result: { hash: "hash:secret" }
-    });
-
-    const verify = await fetchHandler(
-      new Request("https://example.com/_bench/verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          scenarioId: "s3",
-          candidate: "ts-direct",
-          path: "direct",
-          track: "parity",
-          preset: "standard-recommended",
-          inputId: "ascii-12",
-          concurrency: 1,
-          password: "secret",
-          hash: "hash:secret"
-        })
-      })
-    );
-    expect(verify.status).toBe(200);
-    expect((await verify.json()) as { result: { verified: boolean } }).toMatchObject({
-      result: { verified: true }
+  it("does nothing when verification fails", async () => {
+    await expect(verifyAndMaybeRehash(hasher, "hash:wrong", "secret")).resolves.toEqual({
+      verified: false,
+      needsRehash: false,
+      rehashed: false,
+      updatedHash: null,
+      reasons: []
     });
   });
 
-  it("re-exports hash upgrade helpers", () => {
+  it("rehashes legacy hashes after successful verification", async () => {
+    await expect(verifyAndMaybeRehash(hasher, "legacy-salt:deadbeef", "secret")).resolves.toEqual({
+      verified: true,
+      needsRehash: true,
+      rehashed: true,
+      updatedHash: "next:secret",
+      reasons: ["legacy-scrypt-format"]
+    });
+  });
+
+  it("rehashes lower-cost Argon2 hashes after successful verification", async () => {
     const lowerCostHash =
       "$argon2id$v=19$m=4096,t=1,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
-    expect(needsPasswordRehash(lowerCostHash, STANDARD_RECOMMENDED_PRESET)).toBe(true);
+    const lowerCostHasher = {
+      ...hasher,
+      async verifyPassword(hash: string) {
+        return hash === lowerCostHash;
+      }
+    };
+
+    await expect(verifyAndMaybeRehash(lowerCostHasher, lowerCostHash, "secret")).resolves.toEqual({
+      verified: true,
+      needsRehash: true,
+      rehashed: true,
+      updatedHash: "next:secret",
+      reasons: ["argon2-memory", "argon2-iterations"]
+    });
+  });
+
+  it("does not rehash when the stored hash already meets the target", async () => {
+    const currentHash =
+      "$argon2id$v=19$m=12288,t=3,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
+    const currentHasher = {
+      ...hasher,
+      async verifyPassword(hash: string) {
+        return hash === currentHash;
+      }
+    };
+
+    await expect(verifyAndMaybeRehash(currentHasher, currentHash, "secret")).resolves.toEqual({
+      verified: true,
+      needsRehash: false,
+      rehashed: false,
+      updatedHash: null,
+      reasons: []
+    });
+  });
+
+  it("persists the updated hash when a callback is provided", async () => {
+    const persistUpdatedHash = vi.fn();
+    await verifyAndMaybeRehash(hasher, "legacy-salt:deadbeef", "secret", {
+      targetPreset: STANDARD_2026Q1_PRESET,
+      persistUpdatedHash
+    });
+
+    expect(persistUpdatedHash).toHaveBeenCalledWith("next:secret", {
+      previousHash: "legacy-salt:deadbeef",
+      password: "secret",
+      reasons: ["legacy-scrypt-format"],
+      targetPreset: STANDARD_2026Q1_PRESET
+    });
+  });
+});
+
+describe("rehash assessment re-exports", () => {
+  it("re-exports lower-level helpers", () => {
+    const lowerCostHash =
+      "$argon2id$v=19$m=4096,t=1,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
+    expect(needsPasswordRehash(lowerCostHash, STANDARD_2026Q1_PRESET)).toBe(true);
   });
 });

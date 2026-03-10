@@ -1,8 +1,8 @@
 {
-  "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "auth-hasher-ts-direct",
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cloudflare-auth-hasher-template",
   "main": "src/index.ts",
-  "compatibility_date": "2026-03-09",
+  "compatibility_date": "2026-03-10",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "observability": {

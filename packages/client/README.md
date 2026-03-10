@@ -2,7 +2,7 @@
 
 Helpers for consuming the auth hasher Worker from another Worker.
 
-## Main helpers
+## Main Helpers
 
 - `isAuthHasherBinding(value)`
 - `resolveAuthHasherBinding(env, bindingName?)`
@@ -10,16 +10,55 @@ Helpers for consuming the auth hasher Worker from another Worker.
 - `parseStoredPasswordHash(hash)`
 - `assessPasswordHash(hash, targetPreset?)`
 - `needsPasswordRehash(hash, targetPreset?)`
+- `verifyAndMaybeRehash(hasher, storedHash, password, options?)`
 - `isOwaspAlignedPreset(preset)`
 
-These helpers are implemented in [`src/index.ts`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/client/src/index.ts).
+Canonical preset exports:
 
-## Recommended use
+- `STANDARD_2026Q1_PRESET`
+- `FREE_TIER_FALLBACK_2026Q1_PRESET`
 
-Use these helpers with a Cloudflare service binding that targets the promoted [`ts-rust-wasm`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/workers/ts-rust-wasm/README.md) Worker.
+Compatibility export:
 
-Full guide:
+- `STANDARD_RECOMMENDED_PRESET`
 
-- [`docs/using-from-workers.md`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/docs/using-from-workers.md)
+## Recommended Use
 
-Use the hash-assessment helpers when you raise Argon2 cost later and want `rehash-on-login` behavior without breaking verification of older hashes.
+Use these helpers with a Cloudflare service binding that targets the deployed root template Worker.
+
+Guide:
+
+- [`docs/using-from-workers.md`](../../docs/using-from-workers.md)
+
+`verifyAndMaybeRehash()` is the highest-level helper for gradual upgrades. It verifies the current hash first, decides whether the stored hash is below the target preset, and optionally persists the new hash through a callback.
+
+## Example
+
+```ts
+import {
+  STANDARD_2026Q1_PRESET,
+  ensureAuthHasherBinding,
+  verifyAndMaybeRehash
+} from "@cloudflare-auth-hasher/client";
+import type { AuthHasherBinding } from "@cloudflare-auth-hasher/contracts";
+
+type Env = {
+  AUTH_HASHER: AuthHasherBinding;
+};
+
+async function login(
+  env: Env,
+  storedHash: string,
+  password: string,
+  saveHash: (updatedHash: string) => Promise<void>
+) {
+  const hasher = ensureAuthHasherBinding(env, "AUTH_HASHER");
+
+  return verifyAndMaybeRehash(hasher, storedHash, password, {
+    targetPreset: STANDARD_2026Q1_PRESET,
+    persistUpdatedHash: async (updatedHash) => {
+      await saveHash(updatedHash);
+    }
+  });
+}
+```

@@ -6,6 +6,5 @@
 /.mf
 /dist
 /.DS_Store
-/workers/ts-rust-wasm/src/rust-wasm-kernel.wasm
 /kernels/assemblyscript/build
 /mise.local.toml

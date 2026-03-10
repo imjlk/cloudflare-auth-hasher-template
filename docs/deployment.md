@@ -1,49 +1,59 @@
 # Deployment
 
-This workspace ships with a root deployment helper so you can deploy against a different Cloudflare account without rewriting each Worker command by hand.
+`main` is now a single root-deployable Worker. All deploy commands run from the repository root.
 
-## Supported credential sources
+## Credentials
 
-The helper uses Wrangler's standard authentication environment variables:
+Wrangler reads the standard Cloudflare environment variables:
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 
-For local developer setup, this repository also includes a [`mise.local.toml`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/mise.local.toml) example with the same variables.
-For a safe template without secrets, start from [`mise.local.example.toml`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/mise.local.example.toml).
-
-You can provide them in two ways:
-
-### 1. Environment variables
+You can provide them directly:
 
 ```bash
 export CLOUDFLARE_ACCOUNT_ID=your-account-id
 export CLOUDFLARE_API_TOKEN=your-api-token
-npm run deploy:workers
 ```
 
-### 1a. `mise.local.toml`
-
-Set the values in `mise.local.toml`, then let `mise` load them in your shell:
+Or load them from `mise`:
 
 ```bash
+cp mise.local.example.toml mise.local.toml
 mise env -s zsh | source /dev/stdin
-npm run deploy:workers
 ```
 
-### 2. Interactive prompts
+## Commands
 
-If the terminal is interactive and either value is missing, the script prompts for it:
+Validate the deploy configuration without publishing:
 
 ```bash
-npm run deploy:workers
+npm run deploy:dry-run
 ```
 
-The API token input is hidden while you type.
+Deploy the root Worker:
 
-## Hash preset env vars
+```bash
+npm run deploy
+```
 
-The deployment path also forwards optional hash-tuning vars:
+Local development:
+
+```bash
+npm run dev
+```
+
+## Build Behavior
+
+The root `build` step tries to rebuild the Rust Wasm kernel first. If `cargo` is unavailable, it falls back to the committed [`src/rust-wasm-kernel.wasm`](../src/rust-wasm-kernel.wasm).
+
+That keeps the template deployable through the root `Deploy to Cloudflare` button even when the deploy environment does not rebuild Rust sources.
+
+If you modify the Rust code in [`crates/hash-core`](../crates/hash-core) or [`crates/rust-wasm-kernel`](../crates/rust-wasm-kernel), rebuild locally with Rust installed before committing.
+
+## Optional Runtime Tuning
+
+The deploy wrapper forwards these optional environment variables into the effective Wrangler config:
 
 - `AUTH_HASHER_PRESET_ID`
 - `AUTH_HASHER_ARGON2_MEMORY_KIB`
@@ -52,92 +62,56 @@ The deployment path also forwards optional hash-tuning vars:
 - `AUTH_HASHER_ARGON2_OUTPUT_LENGTH`
 - `AUTH_HASHER_WORKER_CPU_MS`
 
-The workspace handles them in both places that matter:
+Canonical preset IDs:
 
-- the TypeScript Workers receive them as Wrangler `vars`
-- the Rust Worker and Rust Wasm kernel receive them through the build environment
+- `standard-2026q1`
+- `free-tier-fallback-2026q1`
 
-Because of that, one env change can retune all three baseline candidates together.
-If `AUTH_HASHER_WORKER_CPU_MS` is set, the deploy wrapper also injects `limits.cpu_ms` into the effective Wrangler config for that run.
+Legacy aliases are still accepted for input compatibility:
 
-Example lower-cost probe for Cloudflare `1102` / CPU-limit investigations:
+- `standard-recommended`
+- `free-safe-probe`
+
+Runtime metadata and docs always use the canonical IDs.
+
+## Free-Tier Fallback Example
+
+Use the lower-cost fallback only when Workers Free cannot sustain the standard preset.
 
 ```bash
-export AUTH_HASHER_PRESET_ID=free-safe-probe
+export AUTH_HASHER_PRESET_ID=free-tier-fallback-2026q1
 export AUTH_HASHER_ARGON2_MEMORY_KIB=4096
 export AUTH_HASHER_ARGON2_TIME_COST=1
 export AUTH_HASHER_ARGON2_PARALLELISM=1
 export AUTH_HASHER_ARGON2_OUTPUT_LENGTH=32
 
-npm run deploy:workers -- --yes
+npm run deploy
 ```
 
-If you change the numeric values, also change `AUTH_HASHER_PRESET_ID` so benchmark scenario IDs and worker metadata stay honest.
+This fallback is a platform accommodation only. It is not the repository's OWASP-aligned baseline.
 
-For higher-cost presets on Workers Paid, Cloudflare also allows a higher per-request CPU budget through `limits.cpu_ms`. See the official [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) page for the current plan defaults and caps. Keep that as a deploy-time tuning step, not a substitute for benchmark validation. The committed `standard-recommended` finalist profiles in this repo showed both CPU-limit failures and non-CPU runtime failures.
-
-Example Paid-oriented deploy:
+## Paid Upgrade Example
 
 ```bash
-export AUTH_HASHER_PRESET_ID=standard-recommended
+export AUTH_HASHER_PRESET_ID=standard-2026q1
 export AUTH_HASHER_ARGON2_MEMORY_KIB=12288
 export AUTH_HASHER_ARGON2_TIME_COST=3
 export AUTH_HASHER_ARGON2_PARALLELISM=1
 export AUTH_HASHER_ARGON2_OUTPUT_LENGTH=32
 export AUTH_HASHER_WORKER_CPU_MS=100
 
-npm run deploy:workers -- --yes
+npm run deploy
 ```
 
-Recommended Free-to-Paid migration steps:
+`AUTH_HASHER_WORKER_CPU_MS` only matters on plans that support a higher Worker CPU budget. It is useful for Paid migration, not for Workers Free.
 
-1. Raise the preset from a lower-cost probe to your target preset.
-2. Set `AUTH_HASHER_WORKER_CPU_MS` only if you actually need more Worker CPU budget on Paid.
-3. Redeploy and verify the active metadata at `GET /`.
-4. Add `needsPasswordRehash()` in the caller so old hashes are upgraded after successful login.
+## Free To Paid Migration
 
-## Commands
+Recommended order:
 
-### Deploy all baseline workers plus the gateway
+1. move from `free-tier-fallback-2026q1` to `standard-2026q1`
+2. set `AUTH_HASHER_WORKER_CPU_MS` only if the Paid deployment needs a higher per-request CPU budget
+3. redeploy and confirm `GET /` returns the expected canonical preset and Argon2 settings
+4. use `verifyAndMaybeRehash()` or `needsPasswordRehash()` in the caller so older hashes are upgraded gradually
 
-```bash
-npm run deploy:workers
-```
-
-### Validate the same flow without publishing
-
-```bash
-npm run deploy:workers:dry-run
-```
-
-### Deploy only a subset
-
-```bash
-npm run deploy:workers -- --workers=ts-direct,rust-full
-```
-
-### Non-interactive CI usage
-
-```bash
-CLOUDFLARE_ACCOUNT_ID=your-account-id \
-CLOUDFLARE_API_TOKEN=your-api-token \
-npm run deploy:workers -- --yes
-```
-
-## Worker order
-
-The script deploys Workers in this order:
-
-1. `ts-direct`
-2. `ts-rust-wasm`
-3. `rust-full`
-4. `binding-gateway`
-
-That order keeps the service-binding gateway last, after the baseline Worker names already exist in the target account.
-
-## Notes
-
-- `--dry-run` runs each workspace's validation command instead of a live deploy.
-- `binding-gateway` still expects its service-binding target Worker names to match the names in its [`wrangler.jsonc`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/workers/binding-gateway/wrangler.jsonc).
-- The deployment helper does not write credentials to disk.
-- The checked-in `wrangler.jsonc` files stay neutral. Runtime tuning is injected at command time by [`scripts/run-wrangler.mjs`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/scripts/run-wrangler.mjs).
+Existing hashes continue to verify after you raise the preset because the stored Argon2 PHC string contains its own parameters.

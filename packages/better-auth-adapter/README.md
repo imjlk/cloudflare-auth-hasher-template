@@ -1,22 +1,22 @@
 # Better Auth Adapter
 
-This package wraps the service binding contract for Better Auth style password hashing flows.
+This package wraps the auth hasher service binding for Better Auth style password hashing flows.
 
-## What it does
+## What It Does
 
-- Uses `AUTH_HASHER` when running inside Cloudflare Workers.
-- Falls back to local Better Auth hashing outside Cloudflare.
-- Keeps the binding lookup isolated from framework-specific code.
+- uses `AUTH_HASHER` when running inside Cloudflare Workers
+- falls back to local Better Auth hashing outside Workers
+- keeps the binding lookup isolated from framework-specific code
 
-Recommended Worker-to-Worker integration guide:
+Guide:
 
-- [`docs/using-from-workers.md`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/docs/using-from-workers.md)
+- [`docs/using-from-workers.md`](../../docs/using-from-workers.md)
 
-Note:
+## Rehash Behavior
 
-- This adapter keeps `hash()` and `verify()` wired to the hasher Worker.
-- It does not automatically perform `rehash-on-login` when you raise Argon2 cost later.
-- Use `needsPasswordRehash()` from [`@cloudflare-auth-hasher/client`](/Users/imjlk/repos/imjlk/cloudflare-auth-hasher-template/packages/client/src/index.ts) in your post-login flow if you want gradual hash upgrades.
+This adapter keeps `hash()` and `verify()` wired to the hasher Worker, but it does not persist upgraded hashes by itself.
+
+If you later move from `free-tier-fallback-2026q1` to `standard-2026q1`, combine Better Auth verification with `verifyAndMaybeRehash()` from [`@cloudflare-auth-hasher/client`](../client/src/index.ts) in your post-login flow.
 
 ## Example
 

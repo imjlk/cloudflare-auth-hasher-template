@@ -10,13 +10,13 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["@cloudflare/workers-types", "node"]
+    "types": ["node"]
   },
   "include": [
     "global.d.ts",
-    "bench/**/*.ts",
     "packages/**/*.ts",
-    "workers/**/*.ts"
+    "src/**/*.ts",
+    "worker-configuration.d.ts"
   ],
   "exclude": [
     "node_modules",
