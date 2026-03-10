@@ -83,6 +83,15 @@ export interface VerifyAndMaybeRehashResult {
   reasons: PasswordHashUpgradeReason[];
 }
 
+const createTargetPresetMismatchError = (
+  targetPreset: HashPresetDefinition,
+  reasons: PasswordHashUpgradeReason[]
+): Error => {
+  return new Error(
+    `Hasher output does not satisfy target preset '${targetPreset.id}'. Remaining differences: ${reasons.join(", ")}.`
+  );
+};
+
 export const verifyAndMaybeRehash = async (
   hasher: AuthHasherRpc,
   storedHash: string,
@@ -113,6 +122,11 @@ export const verifyAndMaybeRehash = async (
   }
 
   const updatedHash = await hasher.hashPassword(password);
+  const updatedAssessment = assessPasswordHash(updatedHash, targetPreset);
+  if (updatedAssessment.needsRehash) {
+    throw createTargetPresetMismatchError(targetPreset, updatedAssessment.reasons);
+  }
+
   await options.persistUpdatedHash?.(updatedHash, {
     previousHash: storedHash,
     password,

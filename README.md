@@ -56,8 +56,13 @@ npx wrangler whoami
 
 ```bash
 npm run typecheck
-npm test
 npm run check
+```
+
+Run the full Rust-backed test suite when the Rust toolchain is available locally:
+
+```bash
+npm test
 ```
 
 ### 4. Develop locally
@@ -72,7 +77,7 @@ npm run dev
 npm run deploy
 ```
 
-For cross-account deploys, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` or load them from [`mise.local.toml`](./mise.local.toml). More detail is in [docs/deployment.md](./docs/deployment.md).
+For cross-account deploys, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` or copy [`mise.local.example.toml`](./mise.local.example.toml) to `mise.local.toml` and load it with `mise`. More detail is in [docs/deployment.md](./docs/deployment.md).
 
 ## Use From Another Worker
 
@@ -94,6 +99,8 @@ The supported migration path is:
 4. call `verifyAndMaybeRehash()` after successful login so weaker hashes are replaced gradually
 
 If you need a higher Worker CPU budget on Workers Paid, the deploy wrapper also accepts `AUTH_HASHER_WORKER_CPU_MS` and injects `limits.cpu_ms` for that deploy.
+
+`verifyAndMaybeRehash()` assumes the deployed hasher Worker is configured to the same target preset you pass in. If the Worker is still running a weaker preset, the helper now throws instead of silently persisting another below-target hash.
 
 ## Benchmark History
 

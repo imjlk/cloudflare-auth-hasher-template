@@ -31,6 +31,13 @@ Validate the deploy configuration without publishing:
 npm run deploy:dry-run
 ```
 
+Lightweight local validation without Rust tests:
+
+```bash
+npm run typecheck
+npm run check
+```
+
 Deploy the root Worker:
 
 ```bash
@@ -50,6 +57,12 @@ The root `build` step tries to rebuild the Rust Wasm kernel first. If `cargo` is
 That keeps the template deployable through the root `Deploy to Cloudflare` button even when the deploy environment does not rebuild Rust sources.
 
 If you modify the Rust code in [`crates/hash-core`](../crates/hash-core) or [`crates/rust-wasm-kernel`](../crates/rust-wasm-kernel), rebuild locally with Rust installed before committing.
+
+If you want the full Rust-backed test suite locally, run:
+
+```bash
+npm test
+```
 
 ## Optional Runtime Tuning
 
@@ -115,3 +128,4 @@ Recommended order:
 4. use `verifyAndMaybeRehash()` or `needsPasswordRehash()` in the caller so older hashes are upgraded gradually
 
 Existing hashes continue to verify after you raise the preset because the stored Argon2 PHC string contains its own parameters.
+`verifyAndMaybeRehash()` expects the deployed hasher Worker to already use the target preset. If the Worker still emits a lower-cost preset, the helper now throws instead of silently storing another below-target hash.

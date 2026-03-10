@@ -106,6 +106,7 @@ async function verifyPasswordAndUpgrade(
 - `reasons`
 
 `reasons` tells you why the stored hash was considered below the current target. That includes legacy Better Auth scrypt hashes and lower-cost Argon2 hashes.
+The helper also validates that the replacement hash actually satisfies the requested target preset. If your deployed hasher Worker is still configured to a weaker preset, it throws instead of silently persisting another under-strength hash.
 
 ## Better Auth Integration
 

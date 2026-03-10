@@ -31,6 +31,7 @@ Guide:
 - [`docs/using-from-workers.md`](../../docs/using-from-workers.md)
 
 `verifyAndMaybeRehash()` is the highest-level helper for gradual upgrades. It verifies the current hash first, decides whether the stored hash is below the target preset, and optionally persists the new hash through a callback.
+It also validates that the replacement hash actually satisfies the requested target preset and throws if the deployed hasher Worker is still configured too low.
 
 ## Example
 

@@ -7,6 +7,9 @@ import {
   verifyAndMaybeRehash
 } from "./index";
 
+const rehashedArgon2 =
+  "$argon2id$v=19$m=12288,t=3,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
+
 describe("binding helpers", () => {
   const binding = {
     async hashPassword(password: string) {
@@ -33,7 +36,7 @@ describe("binding helpers", () => {
 describe("verifyAndMaybeRehash", () => {
   const hasher = {
     async hashPassword(password: string) {
-      return `next:${password}`;
+      return rehashedArgon2;
     },
     async verifyPassword(hash: string, password: string) {
       return hash === `hash:${password}` || hash === "legacy-salt:deadbeef";
@@ -55,7 +58,7 @@ describe("verifyAndMaybeRehash", () => {
       verified: true,
       needsRehash: true,
       rehashed: true,
-      updatedHash: "next:secret",
+      updatedHash: rehashedArgon2,
       reasons: ["legacy-scrypt-format"]
     });
   });
@@ -74,7 +77,7 @@ describe("verifyAndMaybeRehash", () => {
       verified: true,
       needsRehash: true,
       rehashed: true,
-      updatedHash: "next:secret",
+      updatedHash: rehashedArgon2,
       reasons: ["argon2-memory", "argon2-iterations"]
     });
   });
@@ -105,12 +108,32 @@ describe("verifyAndMaybeRehash", () => {
       persistUpdatedHash
     });
 
-    expect(persistUpdatedHash).toHaveBeenCalledWith("next:secret", {
+    expect(persistUpdatedHash).toHaveBeenCalledWith(rehashedArgon2, {
       previousHash: "legacy-salt:deadbeef",
       password: "secret",
       reasons: ["legacy-scrypt-format"],
       targetPreset: STANDARD_2026Q1_PRESET
     });
+  });
+
+  it("throws when the hasher output still does not satisfy the requested target preset", async () => {
+    const persistUpdatedHash = vi.fn();
+    const mismatchedHasher = {
+      async hashPassword() {
+        return "$argon2id$v=19$m=4096,t=1,p=1$BwcHBwcHBwcHBwcHBwcHBw$CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCws";
+      },
+      async verifyPassword(hash: string) {
+        return hash === "legacy-salt:deadbeef";
+      }
+    };
+
+    await expect(
+      verifyAndMaybeRehash(mismatchedHasher, "legacy-salt:deadbeef", "secret", {
+        targetPreset: STANDARD_2026Q1_PRESET,
+        persistUpdatedHash
+      })
+    ).rejects.toThrow("Hasher output does not satisfy target preset 'standard-2026q1'.");
+    expect(persistUpdatedHash).not.toHaveBeenCalled();
   });
 });
 
