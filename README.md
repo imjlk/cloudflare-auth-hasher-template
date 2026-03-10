@@ -25,8 +25,19 @@ The saved production-facing benchmark profiles in [`bench/results/profiles/2026-
 - `ts-rust-wasm` and `rust-full` were the two viable finalists
 - `ts-rust-wasm` held up better than `rust-full` on the `standard-recommended` UTF-8 scenarios
 - the `standard-recommended` failures were not only CPU-limit failures, so a Paid plan is not a complete explanation by itself
+- the Free-tier-stable `free-safe-probe` preset is a platform-constrained fallback, not the general security recommendation
 
 This workspace still keeps all candidates side by side for reference, but `ts-rust-wasm` is now the implementation to promote first.
+
+## Free-tier guidance
+
+The current benchmark evidence supports a narrow conclusion for Workers Free:
+
+- use a lowered preset only as an operational fallback when the platform budget forces it
+- do not describe that lowered preset as equivalent to the repository's `standard-recommended` baseline
+- do not describe that lowered preset as OWASP-aligned password hashing guidance
+
+The saved `free-safe-probe` runs were stable on the current Free-tier account, but that preset is intentionally below the Argon2id parameter sets listed in the [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html). In this repository, `standard-recommended` is the OWASP-aligned floor and `free-safe-probe` is the platform-constrained fallback.
 
 ## Workspace layout
 
@@ -191,6 +202,8 @@ export AUTH_HASHER_ARGON2_OUTPUT_LENGTH=32
 
 npm run deploy:workers -- --yes
 ```
+
+Use that lower-cost probe only when you are validating what can survive on Workers Free. It should not replace the repository's `standard-recommended` preset for deployments that need an OWASP-aligned baseline.
 
 After deploy, each direct candidate exposes its active preset and Argon2 parameters at `/`, so you can verify the effective config with `curl`.
 

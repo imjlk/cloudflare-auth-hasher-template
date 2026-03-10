@@ -52,6 +52,13 @@ For `binding` scenarios, `hash` and `verify` run through WorkerEntrypoint RPC se
 
 The `free-safe` preset is intentionally not promoted into the code defaults yet. It will be introduced only after first-pass production measurements.
 
+Security interpretation:
+
+- `standard-recommended` is the repository's OWASP-aligned baseline.
+- `free-safe-probe` is a platform-constrained fallback for Workers Free validation only.
+- `free-safe-probe` should not be presented as an OWASP-equivalent password hashing preset.
+- This distinction follows the current [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) and the current [Cloudflare Workers limits](https://developers.cloudflare.com/workers/platform/limits/) guidance.
+
 ## Runtime-tuned presets
 
 The benchmark runner now derives the active preset ID from the same environment used for deployment:
@@ -148,6 +155,12 @@ Current readout from deployed endpoint wall-time tests:
 | `free-safe-probe` focused rerun | `rust-full` | The full Rust Worker also completed the same focused `direct` and `binding` UTF-8 `c1` validation without recorded failures at the lowered preset. |
 | `free-safe-probe` stress rerun | `rust-full` | The full Rust Worker also completed the saved `c4` and `c16` UTF-8 stress follow-up without recorded failures at the lowered preset. |
 
+Interpretation:
+
+- the lower-cost `free-safe-probe` profile is useful evidence for what survives on the current Workers Free account
+- it is not evidence that the lowered preset is the right long-term password hashing policy
+- in this repository, lower-cost Free-tier presets are documented as platform accommodations, not as the preferred security baseline
+
 ## Final recommendation
 
 Default public template recommendation: `ts-rust-wasm`.
@@ -216,6 +229,7 @@ Current practical recommendation for the promoted `ts-rust-wasm` template:
 - keep `concurrency=16` only for exploratory stress work until the runner separates scenario state more cleanly
 - if the target deployment is Workers Free, use the saved `free-safe-probe` profile as the current safest reference point rather than `standard-recommended`
 - on the current Free-tier account, both `ts-rust-wasm` and `rust-full` stabilized at the lowered preset; `ts-rust-wasm` remains the promoted default because it won the higher-cost finalist comparison and keeps the TypeScript shell ergonomics
+- if OWASP-aligned Argon2id settings are a requirement, do not treat the lowered Free-tier preset as sufficient; use the `standard-recommended` floor and plan for a platform budget that can actually sustain it
 
 ## Output contract
 
