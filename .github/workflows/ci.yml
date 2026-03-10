@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate worker types
+        run: npm run types
+
+      - name: Check worker configuration types
+        run: git diff --exit-code -- worker-configuration.d.ts
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Dry-run deploy validation
+        run: npm run check
+
+      - name: Check committed Wasm artifact
+        run: git diff --exit-code -- src/rust-wasm-kernel.wasm
+
+      - name: Test
+        run: npm test
+
+      - name: Validate example workers
+        run: npm run check:examples

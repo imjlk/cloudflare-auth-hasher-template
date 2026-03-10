@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "auth-hasher-rpc-caller-example",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "services": [
+    {
+      "binding": "AUTH_HASHER",
+      "service": "cloudflare-auth-hasher-template",
+      "remote": true
+    }
+  ]
+}

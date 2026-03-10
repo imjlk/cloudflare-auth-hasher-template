@@ -7,7 +7,8 @@ const RUNTIME_VAR_KEYS = [
   "AUTH_HASHER_ARGON2_MEMORY_KIB",
   "AUTH_HASHER_ARGON2_TIME_COST",
   "AUTH_HASHER_ARGON2_PARALLELISM",
-  "AUTH_HASHER_ARGON2_OUTPUT_LENGTH"
+  "AUTH_HASHER_ARGON2_OUTPUT_LENGTH",
+  "AUTH_HASHER_ENABLE_METADATA_ROUTE"
 ];
 const WORKER_CPU_LIMIT_KEY = "AUTH_HASHER_WORKER_CPU_MS";
 
@@ -93,8 +94,10 @@ const createConfigOverride = async (configPath, runtimeVars, workerCpuLimit) => 
 const main = async () => {
   const args = process.argv.slice(2);
   const { configIndex, configPath } = parseArgs(args);
-  const runtimeVars = readRuntimeVars();
-  const workerCpuLimit = readWorkerCpuLimit();
+  const subcommand = args[0];
+  const supportsRuntimeOverrides = subcommand !== "types";
+  const runtimeVars = supportsRuntimeOverrides ? readRuntimeVars() : {};
+  const workerCpuLimit = supportsRuntimeOverrides ? readWorkerCpuLimit() : null;
 
   let cleanup = async () => {};
   if (Object.keys(runtimeVars).length > 0 || workerCpuLimit !== null) {

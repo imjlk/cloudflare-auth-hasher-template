@@ -4,6 +4,7 @@ import {
   assessPasswordHash,
   canonicalizePresetId,
   FREE_TIER_FALLBACK_2026Q1_PRESET,
+  isMetadataRouteEnabled,
   isOwaspAlignedPreset,
   needsPasswordRehash,
   STANDARD_2026Q1_PRESET,
@@ -76,6 +77,28 @@ describe("canonicalizePresetId", () => {
   it("maps known aliases to canonical values", () => {
     expect(canonicalizePresetId("standard-recommended")).toBe(AUTH_HASHER_PRESET_IDS.standard2026Q1);
     expect(canonicalizePresetId("free-safe-probe")).toBe(AUTH_HASHER_PRESET_IDS.freeTierFallback2026Q1);
+  });
+});
+
+describe("isMetadataRouteEnabled", () => {
+  it("defaults to enabled", () => {
+    expect(isMetadataRouteEnabled(undefined)).toBe(true);
+  });
+
+  it("disables the metadata route when set to false", () => {
+    expect(
+      isMetadataRouteEnabled({
+        AUTH_HASHER_ENABLE_METADATA_ROUTE: "false"
+      })
+    ).toBe(false);
+  });
+
+  it("rejects invalid boolean values", () => {
+    expect(() =>
+      isMetadataRouteEnabled({
+        AUTH_HASHER_ENABLE_METADATA_ROUTE: "sometimes"
+      })
+    ).toThrow("AUTH_HASHER_ENABLE_METADATA_ROUTE must be true/false or 1/0.");
   });
 });
 

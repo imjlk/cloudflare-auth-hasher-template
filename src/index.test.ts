@@ -20,4 +20,12 @@ describe("AuthHasherTemplateWorker", () => {
     const response = handleFetch(new Request("https://example.com/_bench/hash", { method: "POST" }), {});
     expect(response.status).toBe(404);
   });
+
+  it("can disable the metadata route through runtime env", async () => {
+    const response = handleFetch(new Request("https://example.com/"), {
+      AUTH_HASHER_ENABLE_METADATA_ROUTE: "false"
+    });
+
+    expect(response.status).toBe(404);
+  });
 });

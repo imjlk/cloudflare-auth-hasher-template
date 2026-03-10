@@ -19,6 +19,7 @@ export const AUTH_HASHER_ENV_KEYS = {
   iterations: "AUTH_HASHER_ARGON2_TIME_COST",
   parallelism: "AUTH_HASHER_ARGON2_PARALLELISM",
   outputLength: "AUTH_HASHER_ARGON2_OUTPUT_LENGTH",
+  metadataRouteEnabled: "AUTH_HASHER_ENABLE_METADATA_ROUTE",
   workerCpuMs: "AUTH_HASHER_WORKER_CPU_MS"
 } as const;
 
@@ -49,6 +50,7 @@ export interface AuthHasherRuntimeEnv {
   AUTH_HASHER_ARGON2_TIME_COST?: string;
   AUTH_HASHER_ARGON2_PARALLELISM?: string;
   AUTH_HASHER_ARGON2_OUTPUT_LENGTH?: string;
+  AUTH_HASHER_ENABLE_METADATA_ROUTE?: string;
 }
 
 export interface AuthHasherRpc {
@@ -160,6 +162,23 @@ const parsePositiveInteger = (label: string, rawValue: string | undefined, fallb
   return parsed;
 };
 
+const parseBoolean = (label: string, rawValue: string | undefined, fallback: boolean): boolean => {
+  if (!rawValue) {
+    return fallback;
+  }
+
+  const normalized = rawValue.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  throw new Error(`${label} must be true/false or 1/0. Received '${rawValue}'.`);
+};
+
 export const canonicalizePresetId = (rawPresetId: string | undefined, hasArgonOverrides = false): string => {
   if (!rawPresetId) {
     return hasArgonOverrides ? AUTH_HASHER_PRESET_IDS.envTuned : STANDARD_2026Q1_PRESET.id;
@@ -224,6 +243,16 @@ export const resolveHasherPreset = (
     },
     legacyScrypt: { ...STANDARD_2026Q1_PRESET.legacyScrypt }
   };
+};
+
+export const isMetadataRouteEnabled = (
+  env: Partial<AuthHasherRuntimeEnv> | Record<string, unknown> | null | undefined
+): boolean => {
+  return parseBoolean(
+    AUTH_HASHER_ENV_KEYS.metadataRouteEnabled,
+    runtimeEnvValue(env, AUTH_HASHER_ENV_KEYS.metadataRouteEnabled),
+    true
+  );
 };
 
 const base64NoPadByteLength = (value: string): number => {

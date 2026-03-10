@@ -26,12 +26,12 @@ Compatibility export:
 
 Use these helpers with a Cloudflare service binding that targets the deployed root template Worker.
 
-Guide:
+- guide: [docs/using-from-workers.md](../../docs/using-from-workers.md)
+- generic example: [examples/rpc-caller-worker](../../examples/rpc-caller-worker)
 
-- [`docs/using-from-workers.md`](../../docs/using-from-workers.md)
+`verifyAndMaybeRehash()` is the highest-level helper for gradual upgrades. It verifies the current hash first, determines whether the stored hash is below the target preset, and can hand the replacement hash to your persistence callback.
 
-`verifyAndMaybeRehash()` is the highest-level helper for gradual upgrades. It verifies the current hash first, decides whether the stored hash is below the target preset, and optionally persists the new hash through a callback.
-It also validates that the replacement hash actually satisfies the requested target preset and throws if the deployed hasher Worker is still configured too low.
+The helper also validates that the replacement hash actually satisfies the requested target preset. If the deployed hasher Worker is still configured too low, it throws instead of silently persisting another below-target hash.
 
 ## Example
 
@@ -57,9 +57,7 @@ async function login(
 
   return verifyAndMaybeRehash(hasher, storedHash, password, {
     targetPreset: STANDARD_2026Q1_PRESET,
-    persistUpdatedHash: async (updatedHash) => {
-      await saveHash(updatedHash);
-    }
+    persistUpdatedHash: saveHash
   });
 }
 ```

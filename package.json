@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "TypeScript Cloudflare Worker template with a Rust Wasm password hashing kernel.",
+  "description": "Private password hashing template for Cloudflare Workers using WorkerEntrypoint RPC, Argon2id, and a Rust/Wasm kernel.",
   "packageManager": "npm@11.6.1",
   "workspaces": [
     "packages/*"
@@ -11,6 +11,7 @@
   "scripts": {
     "build": "node ./scripts/build-kernel.mjs",
     "check": "npm run build && node ./scripts/run-wrangler.mjs deploy --dry-run --config wrangler.jsonc",
+    "check:examples": "node ./scripts/check-examples.mjs",
     "test": "npm run build && vitest run && cargo test --workspace",
     "typecheck": "tsc --noEmit",
     "dev": "npm run build && node ./scripts/run-wrangler.mjs dev --config wrangler.jsonc",

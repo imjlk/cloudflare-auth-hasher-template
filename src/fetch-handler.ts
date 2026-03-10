@@ -1,4 +1,5 @@
 import {
+  isMetadataRouteEnabled,
   isOwaspAlignedPreset,
   resolveHasherPreset,
   type AuthHasherMetadata,
@@ -27,7 +28,7 @@ export const buildMetadata = (env?: WorkerEnv): AuthHasherMetadata => {
 export const handleFetch = (request: Request, env?: WorkerEnv): Response => {
   const url = new URL(request.url);
 
-  if (request.method === "GET" && url.pathname === "/") {
+  if (request.method === "GET" && url.pathname === "/" && isMetadataRouteEnabled(env)) {
     return jsonResponse(200, buildMetadata(env));
   }
 
