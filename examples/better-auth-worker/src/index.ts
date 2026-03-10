@@ -6,8 +6,10 @@ import {
   verifyAndMaybeRehash
 } from "@cloudflare-auth-hasher/client";
 
-type Env = {
-  AUTH_HASHER?: AuthHasherBinding;
+// Wrangler types service bindings as Fetcher, so narrow the binding to the
+// RPC-capable shape that this template exposes.
+type Env = Cloudflare.Env & {
+  AUTH_HASHER: AuthHasherBinding;
 };
 
 interface LoginRequestBody {
@@ -66,9 +68,13 @@ export default {
     }
 
     const binding = resolveAuthHasherBinding(env);
+    const persistUpdatedHash = async (_nextHash: string): Promise<void> => {
+      // Replace this stub with your own database update.
+    };
     const upgrade = binding
       ? await verifyAndMaybeRehash(binding, body.storedHash, body.password, {
-          targetPreset: STANDARD_2026Q1_PRESET
+          targetPreset: STANDARD_2026Q1_PRESET,
+          persistUpdatedHash
         })
       : {
           verified: true,
@@ -84,7 +90,6 @@ export default {
       rehash: {
         needsRehash: upgrade.needsRehash,
         rehashed: upgrade.rehashed,
-        updatedHash: upgrade.updatedHash,
         reasons: upgrade.reasons
       }
     });

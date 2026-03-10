@@ -7,7 +7,8 @@ Minimal Worker that calls the auth hasher through a private service binding and 
 - resolving the `AUTH_HASHER` service binding
 - verifying a stored hash through `WorkerEntrypoint` RPC
 - deciding whether the stored hash should be upgraded
-- returning the upgrade result without exposing a public hashing API
+- persisting any replacement hash on the server side
+- returning only non-sensitive upgrade status fields
 
 ## Local Shape
 
@@ -25,3 +26,4 @@ Example request body:
 ```
 
 Replace the service name in [wrangler.jsonc](./wrangler.jsonc) with your deployed hasher Worker name.
+Do not send `updatedHash` back to clients. Store upgraded hashes server-side instead.

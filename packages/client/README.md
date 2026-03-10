@@ -2,6 +2,12 @@
 
 Helpers for consuming the auth hasher Worker from another Worker.
 
+This is a private workspace package.
+
+- it exists to support the root template and examples
+- it is `private: true`
+- it is not published as a standalone npm package from this repository
+
 ## Main Helpers
 
 - `isAuthHasherBinding(value)`
@@ -32,6 +38,7 @@ Use these helpers with a Cloudflare service binding that targets the deployed ro
 `verifyAndMaybeRehash()` is the highest-level helper for gradual upgrades. It verifies the current hash first, determines whether the stored hash is below the target preset, and can hand the replacement hash to your persistence callback.
 
 The helper also validates that the replacement hash actually satisfies the requested target preset. If the deployed hasher Worker is still configured too low, it throws instead of silently persisting another below-target hash.
+The persistence callback intentionally does not receive plaintext passwords.
 
 ## Example
 

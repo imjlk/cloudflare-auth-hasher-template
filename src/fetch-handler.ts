@@ -5,6 +5,8 @@ import {
   type AuthHasherMetadata,
   type AuthHasherRuntimeEnv
 } from "@cloudflare-auth-hasher/contracts";
+import packageJson from "../package.json";
+import buildManifest from "./rust-wasm-kernel.build.json";
 
 type WorkerEnv = AuthHasherRuntimeEnv;
 
@@ -15,9 +17,16 @@ const jsonResponse = (status: number, payload: unknown): Response => {
   });
 };
 
+const notFoundResponse = (): Response => {
+  return new Response(null, { status: 404 });
+};
+
 export const buildMetadata = (env?: WorkerEnv): AuthHasherMetadata => {
   const preset = resolveHasherPreset(env);
   return {
+    algorithm: "argon2id",
+    version: packageJson.version,
+    artifactSourceChecksum: buildManifest.artifactSourceChecksum,
     preset: preset.id,
     argon2id: preset.argon2id,
     rpc: ["hashPassword", "verifyPassword"],
@@ -32,8 +41,5 @@ export const handleFetch = (request: Request, env?: WorkerEnv): Response => {
     return jsonResponse(200, buildMetadata(env));
   }
 
-  return jsonResponse(404, {
-    error: "This Worker exposes hashPassword() and verifyPassword() through WorkerEntrypoint RPC.",
-    rpc: ["hashPassword", "verifyPassword"]
-  });
+  return notFoundResponse();
 };

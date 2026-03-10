@@ -12,7 +12,9 @@ Lightweight validation:
 
 ```bash
 npm run types
+npm run types:examples
 npm run typecheck
+npm run typecheck:examples
 npm run check
 npm run check:examples
 ```

@@ -63,6 +63,9 @@ export interface AuthHasherBinding extends AuthHasherRpc {
 }
 
 export interface AuthHasherMetadata {
+  algorithm: "argon2id";
+  version: string;
+  artifactSourceChecksum: string;
   preset: string;
   argon2id: Argon2idConfig;
   rpc: ["hashPassword", "verifyPassword"];

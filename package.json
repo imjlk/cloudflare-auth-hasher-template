@@ -15,10 +15,12 @@
     "check:examples": "node ./scripts/check-examples.mjs",
     "test": "npm run build && vitest run && cargo test --workspace",
     "typecheck": "tsc --noEmit",
+    "typecheck:examples": "node ./scripts/typecheck-examples.mjs",
     "dev": "npm run build && node ./scripts/run-wrangler.mjs dev --config wrangler.jsonc",
     "deploy": "npm run build && node ./scripts/run-wrangler.mjs deploy --config wrangler.jsonc",
     "deploy:dry-run": "npm run build && node ./scripts/run-wrangler.mjs deploy --dry-run --config wrangler.jsonc",
-    "types": "node ./scripts/run-wrangler.mjs types --config wrangler.jsonc ./worker-configuration.d.ts"
+    "types": "node ./scripts/run-wrangler.mjs types --config wrangler.jsonc ./worker-configuration.d.ts",
+    "types:examples": "node ./scripts/generate-example-types.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",

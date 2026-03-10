@@ -126,6 +126,7 @@ Canonical preset IDs:
   - default
   - repository OWASP-aligned floor
   - Argon2id `12288 KiB / t=3 / p=1 / 32 bytes`
+  - uses one of OWASP's detailed equivalent Argon2id configurations rather than a weaker "almost OWASP" compromise
 - `free-tier-fallback-2026q1`
   - Workers Free fallback when the higher-cost preset is not operationally viable
   - not an OWASP-equivalent recommendation
@@ -138,9 +139,26 @@ Legacy aliases are still accepted for input compatibility:
 
 If you start on the lower-cost preset and later move to `standard-2026q1`, older hashes still verify because the stored Argon2 PHC string carries its own parameters. Use `verifyAndMaybeRehash()` or `needsPasswordRehash()` to replace weaker hashes after successful login.
 
+### `AUTH_HASHER_*` Semantics
+
+| Variable | Affects | Notes |
+| --- | --- | --- |
+| `AUTH_HASHER_PRESET_ID` | build + metadata | selects the canonical preset label and default Argon2 profile |
+| `AUTH_HASHER_ARGON2_*` | build + metadata | changes Rust/Wasm hash output and the metadata Argon2 fields, so they should stay aligned |
+| `AUTH_HASHER_ENABLE_METADATA_ROUTE` | runtime only | hides `GET /` metadata and makes the route return `404` |
+| `AUTH_HASHER_WORKER_CPU_MS` | deploy config only | injects Wrangler `limits.cpu_ms`; it does not change hash parameters |
+
+### Plan Guidance
+
+| Plan | Preset | Observed benchmark signal | Recommendation |
+| --- | --- | --- | --- |
+| Workers Paid or higher-budget deployment | `standard-2026q1` | winner baseline from the higher-cost finalist comparison | preferred default |
+| Workers Free or tightly constrained budget | `free-tier-fallback-2026q1` | lower-cost fallback stabilized the test account after reducing cost | use only as a platform fallback |
+
 ## Security And Operations
 
 - `GET /` exists for metadata, health checks, and deploy verification. You can disable it with `AUTH_HASHER_ENABLE_METADATA_ROUTE=false`.
+- metadata includes the active algorithm, template version, and tracked artifact checksum so deploy verification can be done with a single request.
 - Hashing is not exposed through public HTTP routes. The intended path is private RPC through service bindings.
 - The template does not intentionally log plaintext passwords or password hashes. If you add application logs, keep credentials and hashes out of logs.
 - Observability defaults are enabled so first deploys are debuggable. Harden or reduce persistence to match your own policy.
@@ -191,6 +209,11 @@ packages/better-auth-adapter/
 examples/
 docs/
 ```
+
+The workspace packages are internal template building blocks.
+
+- they remain `private: true`
+- they are not published as standalone npm packages from this repository form
 
 ## References
 

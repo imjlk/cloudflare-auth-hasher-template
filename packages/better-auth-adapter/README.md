@@ -2,6 +2,12 @@
 
 This package wraps the auth hasher service binding for Better Auth-style password hashing flows.
 
+This is a private workspace package.
+
+- it exists to support the template's Better Auth integration path
+- it is `private: true`
+- it is not published as a standalone npm package from this repository
+
 ## What It Does
 
 - uses `AUTH_HASHER` when running inside Cloudflare Workers

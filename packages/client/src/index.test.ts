@@ -110,7 +110,6 @@ describe("verifyAndMaybeRehash", () => {
 
     expect(persistUpdatedHash).toHaveBeenCalledWith(rehashedArgon2, {
       previousHash: "legacy-salt:deadbeef",
-      password: "secret",
       reasons: ["legacy-scrypt-format"],
       targetPreset: STANDARD_2026Q1_PRESET
     });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseStoredPasswordHash } from "@cloudflare-auth-hasher/contracts";
+import { buildMetadata } from "./fetch-handler";
 import { hashPassword, verifyPassword } from "./kernel-node";
 
 describe("Rust Wasm kernel", () => {
@@ -15,5 +16,21 @@ describe("Rust Wasm kernel", () => {
     expect(parseStoredPasswordHash(hash)).toMatchObject({
       format: "argon2id"
     });
+  });
+
+  it("keeps emitted Argon2 parameters aligned with metadata", async () => {
+    const hash = await hashPassword("metadata-parity-secret");
+    const parsed = parseStoredPasswordHash(hash);
+    const metadata = buildMetadata(process.env);
+
+    expect(parsed).toMatchObject({
+      format: "argon2id"
+    });
+
+    if (parsed.format !== "argon2id") {
+      throw new Error("Expected an argon2id hash.");
+    }
+
+    expect(parsed.argon2id).toEqual(metadata.argon2id);
   });
 });

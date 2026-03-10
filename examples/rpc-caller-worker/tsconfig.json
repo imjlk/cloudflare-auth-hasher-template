@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "../../global.d.ts",
+    "./worker-configuration.d.ts",
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "../../node_modules",
+    "../../build",
+    "../../target",
+    "../../coverage"
+  ]
+}

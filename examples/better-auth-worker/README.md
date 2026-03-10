@@ -9,6 +9,7 @@ This example does not bundle Better Auth itself. It keeps the shape small and CI
 - creating a Better Auth-style hasher from `createAuthPasswordHasher()`
 - resolving the Cloudflare binding when running on Workers
 - performing rehash-on-login after successful verification
+- storing upgraded hashes server-side rather than returning them to clients
 
 ## Local Shape
 
@@ -17,3 +18,4 @@ npx wrangler deploy --dry-run --config examples/better-auth-worker/wrangler.json
 ```
 
 Replace the fallback helpers in [src/index.ts](./src/index.ts) with your actual Better Auth crypto functions when wiring this into an application.
+Do not expose replacement hashes in public HTTP responses.

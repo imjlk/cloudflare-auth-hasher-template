@@ -28,7 +28,9 @@ mise env -s zsh | source /dev/stdin
 Lightweight validation:
 
 ```bash
+npm run types:examples
 npm run typecheck
+npm run typecheck:examples
 npm run check
 npm run check:examples
 ```
@@ -86,10 +88,20 @@ Optional deploy-time tuning variables:
 
 The deploy wrapper injects these into the effective Wrangler config for that run.
 
+| Variable | Affects | Notes |
+| --- | --- | --- |
+| `AUTH_HASHER_PRESET_ID` | build + metadata | selects the default preset label and baseline Argon2 profile |
+| `AUTH_HASHER_ARGON2_*` | build + metadata | changes the Rust/Wasm hash output and the metadata Argon2 values |
+| `AUTH_HASHER_ENABLE_METADATA_ROUTE` | runtime only | controls whether `GET /` exposes metadata |
+| `AUTH_HASHER_WORKER_CPU_MS` | deploy config only | sets Wrangler `limits.cpu_ms` when the target plan supports it |
+
 ## 5. Verify The Active Preset
 
 By default, `GET /` returns metadata that includes:
 
+- algorithm
+- template version
+- artifact checksum
 - active preset ID
 - Argon2id parameters
 - exposed RPC methods

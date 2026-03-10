@@ -7,7 +7,7 @@ export interface BetterAuthFallback {
 
 export interface BetterAuthCloudflareEvent {
   platform?: {
-    env?: Record<string, unknown>;
+    env?: object;
   };
 }
 

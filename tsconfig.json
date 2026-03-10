@@ -13,7 +13,6 @@
     "types": ["node"]
   },
   "include": [
-    "examples/**/*.ts",
     "global.d.ts",
     "packages/**/*.ts",
     "src/**/*.ts",

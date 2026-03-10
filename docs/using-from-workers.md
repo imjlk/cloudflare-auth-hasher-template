@@ -88,6 +88,7 @@ Returned fields:
 - `reasons`
 
 `reasons` tells you why the stored hash was considered below the current target. That includes legacy Better Auth scrypt hashes and lower-cost Argon2 hashes.
+`updatedHash` is meant for server-side persistence only. Do not send the replacement hash back to clients in public responses.
 
 ## Preset Mismatch Failure
 
@@ -108,7 +109,8 @@ See [examples/rpc-caller-worker](../examples/rpc-caller-worker) for a minimal Wo
 - resolves the `AUTH_HASHER` binding
 - accepts a login-style request
 - calls `verifyAndMaybeRehash()`
-- returns the upgrade result
+- persists replacement hashes server-side
+- returns only non-sensitive upgrade status fields
 
 ## Better Auth Integration
 
@@ -124,6 +126,7 @@ Recommended Better Auth shape:
 
 - `GET /` returns metadata for health checks and deploy verification by default
 - set `AUTH_HASHER_ENABLE_METADATA_ROUTE=false` to disable the metadata route and make `GET /` return `404`
+- metadata includes `algorithm`, template `version`, and `artifactSourceChecksum` for deploy verification
 - runtime metadata always emits canonical preset IDs such as `standard-2026q1`, even if you configured a legacy alias
 - `standard-2026q1` is the template's OWASP-aligned floor
 - `free-tier-fallback-2026q1` is a constrained Workers Free fallback, not a general security recommendation

@@ -44,15 +44,15 @@ export const isAuthHasherBinding = (value: unknown): value is AuthHasherBinding 
 };
 
 export const resolveAuthHasherBinding = (
-  env: Record<string, unknown> | null | undefined,
+  env: object | null | undefined,
   bindingName = "AUTH_HASHER"
 ): AuthHasherBinding | null => {
-  const value = env?.[bindingName];
+  const value = (env as Record<string, unknown> | null | undefined)?.[bindingName];
   return isAuthHasherBinding(value) ? value : null;
 };
 
 export const ensureAuthHasherBinding = (
-  env: Record<string, unknown> | null | undefined,
+  env: object | null | undefined,
   bindingName = "AUTH_HASHER"
 ): AuthHasherBinding => {
   const binding = resolveAuthHasherBinding(env, bindingName);
@@ -65,7 +65,6 @@ export const ensureAuthHasherBinding = (
 
 export interface VerifyAndMaybeRehashContext {
   previousHash: string;
-  password: string;
   reasons: PasswordHashUpgradeReason[];
   targetPreset: HashPresetDefinition;
 }
@@ -129,7 +128,6 @@ export const verifyAndMaybeRehash = async (
 
   await options.persistUpdatedHash?.(updatedHash, {
     previousHash: storedHash,
-    password,
     reasons: assessment.reasons,
     targetPreset
   });

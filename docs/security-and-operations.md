@@ -25,6 +25,7 @@ That makes `GET /` return `404`.
 `GET /` exists so operators can quickly confirm:
 
 - the Worker is deployed and reachable
+- the active algorithm, template version, and tracked artifact checksum
 - the active canonical preset ID
 - the active Argon2id parameters
 - whether the active preset is OWASP-aligned

@@ -5,7 +5,9 @@ import {
   verifyAndMaybeRehash
 } from "@cloudflare-auth-hasher/client";
 
-type Env = {
+// Wrangler types service bindings as Fetcher, so narrow the binding to the
+// RPC-capable shape that this template exposes.
+type Env = Cloudflare.Env & {
   AUTH_HASHER: AuthHasherBinding;
 };
 
@@ -40,10 +42,20 @@ export default {
     }
 
     const hasher = ensureAuthHasherBinding(env);
+    const persistUpdatedHash = async (_nextHash: string): Promise<void> => {
+      // Replace this stub with your own database update.
+    };
+
     const result = await verifyAndMaybeRehash(hasher, body.storedHash, body.password, {
-      targetPreset: STANDARD_2026Q1_PRESET
+      targetPreset: STANDARD_2026Q1_PRESET,
+      persistUpdatedHash
     });
 
-    return Response.json(result);
+    return Response.json({
+      verified: result.verified,
+      needsRehash: result.needsRehash,
+      rehashed: result.rehashed,
+      reasons: result.reasons
+    });
   }
 };

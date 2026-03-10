@@ -31,11 +31,17 @@ jobs:
       - name: Regenerate worker types
         run: npm run types
 
+      - name: Regenerate example worker types
+        run: npm run types:examples
+
       - name: Check worker configuration types
-        run: git diff --exit-code -- worker-configuration.d.ts
+        run: git diff --exit-code -- worker-configuration.d.ts examples/rpc-caller-worker/worker-configuration.d.ts examples/better-auth-worker/worker-configuration.d.ts
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Typecheck examples
+        run: npm run typecheck:examples
 
       - name: Dry-run deploy validation
         run: npm run check
