@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "node ./scripts/build-kernel.mjs",
+    "build:artifact": "node ./scripts/build-kernel.mjs --ignore-auth-hasher-env",
     "check": "npm run build && node ./scripts/run-wrangler.mjs deploy --dry-run --config wrangler.jsonc",
     "check:examples": "node ./scripts/check-examples.mjs",
     "test": "npm run build && vitest run && cargo test --workspace",

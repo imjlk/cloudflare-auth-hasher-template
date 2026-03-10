@@ -4,6 +4,15 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 
 const ROOT = process.cwd();
+const AUTH_HASHER_ENV_KEYS = [
+  "AUTH_HASHER_PRESET_ID",
+  "AUTH_HASHER_ARGON2_MEMORY_KIB",
+  "AUTH_HASHER_ARGON2_TIME_COST",
+  "AUTH_HASHER_ARGON2_PARALLELISM",
+  "AUTH_HASHER_ARGON2_OUTPUT_LENGTH",
+  "AUTH_HASHER_ENABLE_METADATA_ROUTE",
+  "AUTH_HASHER_WORKER_CPU_MS"
+];
 const BUILT_WASM_PATH = path.join(
   ROOT,
   "target",
@@ -12,6 +21,7 @@ const BUILT_WASM_PATH = path.join(
   "rust_wasm_kernel.wasm"
 );
 const COMMITTED_WASM_PATH = path.join(ROOT, "src", "rust-wasm-kernel.wasm");
+const ignoreAuthHasherEnv = process.argv.includes("--ignore-auth-hasher-env");
 
 const fileExists = async (filePath) => {
   try {
@@ -22,12 +32,25 @@ const fileExists = async (filePath) => {
   }
 };
 
-const runCommand = async (command, args) => {
+const createBuildEnv = () => {
+  if (!ignoreAuthHasherEnv) {
+    return process.env;
+  }
+
+  const nextEnv = { ...process.env };
+  for (const key of AUTH_HASHER_ENV_KEYS) {
+    delete nextEnv[key];
+  }
+
+  return nextEnv;
+};
+
+const runCommand = async (command, args, env) => {
   await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: ROOT,
       stdio: "inherit",
-      env: process.env
+      env
     });
 
     child.on("error", reject);
@@ -63,6 +86,8 @@ const cargoAvailable = async () => {
 };
 
 const main = async () => {
+  const buildEnv = createBuildEnv();
+
   if (await cargoAvailable()) {
     await runCommand("cargo", [
       "build",
@@ -71,7 +96,7 @@ const main = async () => {
       "--target",
       "wasm32-unknown-unknown",
       "--release"
-    ]);
+    ], buildEnv);
     await copyFile(BUILT_WASM_PATH, COMMITTED_WASM_PATH);
     return;
   }

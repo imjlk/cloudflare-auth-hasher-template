@@ -40,11 +40,14 @@ jobs:
       - name: Dry-run deploy validation
         run: npm run check
 
-      - name: Check committed Wasm artifact
-        run: git diff --exit-code -- src/rust-wasm-kernel.wasm
-
       - name: Test
         run: npm test
 
       - name: Validate example workers
         run: npm run check:examples
+
+      - name: Rebuild committed Wasm artifact with default preset
+        run: npm run build:artifact
+
+      - name: Check committed Wasm artifact
+        run: git diff --exit-code -- src/rust-wasm-kernel.wasm

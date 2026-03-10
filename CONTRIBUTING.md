@@ -36,7 +36,7 @@ then:
 
 1. rebuild locally with Rust installed
 2. run `npm run check`
-3. make sure the committed Wasm artifact is refreshed
+3. run `npm run build:artifact` before commit so the committed Wasm artifact goes back to the default template preset
 4. do not commit stale generated artifacts
 
 CI verifies:
