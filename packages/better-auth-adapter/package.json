@@ -1,0 +1,12 @@
+{
+  "name": "@cloudflare-auth-hasher/better-auth-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@cloudflare-auth-hasher/client": "file:../client"
+  }
+}

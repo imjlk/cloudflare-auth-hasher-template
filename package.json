@@ -1,15 +1,33 @@
 {
-  "name": "cloudflare-auth-hasher-template",
+  "name": "cloudflare-auth-hasher-workspace",
   "version": "0.1.0",
   "private": true,
-  "description": "Reusable Rust-based Argon2id password hasher for Cloudflare Workers service bindings.",
+  "type": "module",
+  "description": "Neutral workspace for benchmarking Cloudflare Workers password hasher implementations.",
+  "packageManager": "npm@11.6.1",
+  "workspaces": [
+    "workers/*",
+    "packages/*",
+    "bench",
+    "kernels/assemblyscript"
+  ],
   "scripts": {
-    "build": "cargo install -q \"worker-build@^0.7\" && worker-build --release",
-    "check": "cargo check --target wasm32-unknown-unknown",
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev"
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run check --workspaces --if-present",
+    "test": "npm --workspace @cloudflare-auth-hasher/ts-rust-wasm run build && vitest run && cargo test --workspace",
+    "typecheck": "tsc --noEmit",
+    "deploy:workers": "node scripts/deploy-workers.mjs",
+    "deploy:workers:dry-run": "node scripts/deploy-workers.mjs --dry-run",
+    "bench:local": "tsx bench/src/run-local.ts",
+    "bench:cpu": "tsx bench/src/run-cpu-tail.ts",
+    "bench:summary": "tsx bench/src/summarize.ts"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260303.0",
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
     "wrangler": "^4.71.0"
   }
 }

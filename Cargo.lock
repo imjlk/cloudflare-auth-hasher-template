@@ -26,6 +26,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "auth-hasher-hash-core"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "getrandom",
+ "hex",
+ "scrypt",
+ "subtle",
+ "unicode-normalization",
+]
+
+[[package]]
+name = "auth-hasher-rust-full"
+version = "0.1.0"
+dependencies = [
+ "auth-hasher-hash-core",
+ "js-sys",
+ "serde",
+ "url",
+ "wasm-bindgen",
+ "worker",
+ "worker-macros",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -92,20 +117,6 @@ checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common",
  "inout",
-]
-
-[[package]]
-name = "cloudflare-auth-hasher-template"
-version = "0.1.0"
-dependencies = [
- "argon2",
- "getrandom",
- "hex",
- "scrypt",
- "subtle",
- "unicode-normalization",
- "worker",
- "worker-macros",
 ]
 
 [[package]]
@@ -527,8 +538,12 @@ name = "rand_core"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+
+[[package]]
+name = "rust-wasm-kernel"
+version = "0.1.0"
 dependencies = [
- "getrandom",
+ "auth-hasher-hash-core",
 ]
 
 [[package]]
@@ -558,7 +573,6 @@ version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0516a385866c09368f0b5bcd1caff3366aace790fcd46e2bb032697bb172fd1f"
 dependencies = [
- "password-hash",
  "pbkdf2",
  "salsa20",
  "sha2",

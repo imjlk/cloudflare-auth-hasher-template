@@ -1,0 +1,31 @@
+[
+  {
+    "candidate": "ts-direct",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "standard-recommended",
+    "operation": "hash",
+    "input": "ascii-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 14.221,
+      "p95": 14.993,
+      "p99": 15.102
+    },
+    "startupMs": 15.991,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-direct.direct.hash.parity.standard-recommended.ascii-12.c1",
+    "samples": 3
+  }
+]

@@ -1,0 +1,13 @@
+[package]
+name = "rust-wasm-kernel"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Raw Wasm hashing kernel imported by the TypeScript Worker shell."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+auth-hasher-hash-core = { path = "../hash-core", default-features = false }

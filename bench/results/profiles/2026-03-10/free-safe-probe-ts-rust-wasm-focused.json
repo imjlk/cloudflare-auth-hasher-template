@@ -1,0 +1,524 @@
+[
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 57.411,
+      "p95": 57.411,
+      "p99": 57.411
+    },
+    "startupMs": 198.443,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.noop.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 59.191,
+      "p95": 59.191,
+      "p99": 59.191
+    },
+    "startupMs": 71.737,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.hash.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 59.768,
+      "p95": 59.768,
+      "p99": 59.768
+    },
+    "startupMs": 58.672,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.verify.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 54.381,
+      "p95": 54.381,
+      "p99": 54.381
+    },
+    "startupMs": 153.787,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.noop.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 54.485,
+      "p95": 54.485,
+      "p99": 54.485
+    },
+    "startupMs": 70.195,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.hash.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-12",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 53.382,
+      "p95": 53.382,
+      "p99": 53.382
+    },
+    "startupMs": 56.222,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.verify.parity.free-safe-probe.utf8-12.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 53.257,
+      "p95": 53.257,
+      "p99": 53.257
+    },
+    "startupMs": 55.599,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.noop.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 58.999,
+      "p95": 58.999,
+      "p99": 58.999
+    },
+    "startupMs": 58.999,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.hash.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 57.974,
+      "p95": 57.974,
+      "p99": 57.974
+    },
+    "startupMs": 57.974,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.verify.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 52.728,
+      "p95": 52.728,
+      "p99": 52.728
+    },
+    "startupMs": 53.558,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.noop.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 57.958,
+      "p95": 57.958,
+      "p99": 57.958
+    },
+    "startupMs": 57.958,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.hash.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-32",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 53.917,
+      "p95": 53.917,
+      "p99": 53.917
+    },
+    "startupMs": 55.563,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.verify.parity.free-safe-probe.utf8-32.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 54.18,
+      "p95": 54.18,
+      "p99": 54.18
+    },
+    "startupMs": 54.18,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.noop.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 59.775,
+      "p95": 59.775,
+      "p99": 59.775
+    },
+    "startupMs": 58.495,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.hash.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "direct",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 58.221,
+      "p95": 58.221,
+      "p99": 58.221
+    },
+    "startupMs": 60.535,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.direct.verify.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "noop",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 53.461,
+      "p95": 53.461,
+      "p99": 53.461
+    },
+    "startupMs": 53.461,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.noop.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "hash",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 54.465,
+      "p95": 54.465,
+      "p99": 54.465
+    },
+    "startupMs": 54.465,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.hash.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  },
+  {
+    "candidate": "ts-rust-wasm",
+    "path": "binding",
+    "track": "parity",
+    "algorithm": "argon2id",
+    "preset": "free-safe-probe",
+    "operation": "verify",
+    "input": "utf8-96",
+    "concurrency": 1,
+    "successRate": 1,
+    "cpuTimeMs": {
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "wallTimeMs": {
+      "p50": 63.671,
+      "p95": 63.671,
+      "p99": 63.671
+    },
+    "startupMs": 63.671,
+    "bundleBytes": {
+      "raw": null,
+      "gzip": null
+    },
+    "errors": [],
+    "scenarioId": "ts-rust-wasm.binding.verify.parity.free-safe-probe.utf8-96.c1",
+    "samples": 3
+  }
+]
