@@ -1,6 +1,6 @@
 {
   "name": "cloudflare-auth-hasher-template",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Private password hashing template for Cloudflare Workers using WorkerEntrypoint RPC, Argon2id, and a Rust/Wasm kernel.",
