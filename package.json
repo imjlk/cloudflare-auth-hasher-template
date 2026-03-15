@@ -27,7 +27,7 @@
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "vitest": "^4.1.0",
-    "wrangler": "^4.71.0"
+    "wrangler": "^4.73.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.59.0"
