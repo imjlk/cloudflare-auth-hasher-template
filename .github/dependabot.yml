@@ -4,8 +4,6 @@ updates:
     directory: "/"
     labels:
       - dependencies
-    ignore:
-      - dependency-name: wrangler
     schedule:
       interval: monthly
       time: "10:00"

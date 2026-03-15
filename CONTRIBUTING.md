@@ -66,7 +66,7 @@ Dependabot owns routine dependency version updates for this repository.
 - major updates stay as separate PRs for explicit review
 - Dependabot PRs use the `dependencies` label for triage
 - eligible Dependabot patch and minor PRs receive the `automerge` label and are merged automatically after green CI
-- `wrangler` updates stay manual because they can require checked-in generated type updates
+- `wrangler` updates stay manual because they can require checked-in generated type updates and should fail CI until those generated files are reviewed
 - security updates continue to use GitHub's default Dependabot behavior
 - this repository does not currently run Sampo release automation, so Dependabot maintenance PRs do not generate Sampo changesets
 
