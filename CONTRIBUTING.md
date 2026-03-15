@@ -56,6 +56,16 @@ Keep docs aligned with the public template posture:
 - canonical preset IDs only in examples and docs
 - clear distinction between OWASP-aligned baseline and Free-tier fallback
 
+## Dependency Update Policy
+
+Dependabot owns routine dependency version updates for this repository.
+
+- version update PRs are opened monthly
+- `npm`, `cargo`, and `github-actions` are managed separately
+- minor and patch updates are grouped per ecosystem
+- major updates stay as separate PRs for explicit review
+- security updates continue to use GitHub's default Dependabot behavior
+
 ## Quarterly Maintenance Checklist
 
 At least once per quarter:
