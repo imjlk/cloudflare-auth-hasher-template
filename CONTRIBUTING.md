@@ -64,6 +64,7 @@ Dependabot owns routine dependency version updates for this repository.
 - `npm`, `cargo`, and `github-actions` are managed separately
 - minor and patch updates are grouped per ecosystem
 - major updates stay as separate PRs for explicit review
+- Dependabot PRs use the `dependencies` label for triage
 - security updates continue to use GitHub's default Dependabot behavior
 
 ## Quarterly Maintenance Checklist
