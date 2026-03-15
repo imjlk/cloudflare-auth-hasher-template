@@ -1,0 +1,114 @@
+name: Dependabot Auto-merge
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number || github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  mark-candidate:
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply auto-merge label for eligible updates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+        run: |
+          set -euo pipefail
+
+          eligible=false
+          case "$UPDATE_TYPE" in
+            version-update:semver-minor|version-update:semver-patch)
+              eligible=true
+              ;;
+          esac
+
+          if echo "$DEPENDENCY_NAMES" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -Fxq "wrangler"; then
+            eligible=false
+          fi
+
+          if [ "$eligible" = true ]; then
+            gh pr edit "$PR_URL" --add-label "automerge"
+          else
+            gh pr edit "$PR_URL" --remove-label "automerge" || true
+          fi
+
+  merge-candidate:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge eligible Dependabot PR after green CI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          pr_json="$(gh pr list --state open --head "$HEAD_BRANCH" --json number)"
+          pr_count="$(echo "$pr_json" | jq 'length')"
+
+          if [ "$pr_count" -ne 1 ]; then
+            exit 0
+          fi
+
+          pr_number="$(echo "$pr_json" | jq -r '.[0].number')"
+          details="$(gh pr view "$pr_number" --json url,author,labels,baseRefName,headRefOid,mergeStateStatus,isDraft)"
+
+          author="$(echo "$details" | jq -r '.author.login')"
+          if [ "$author" != "app/dependabot" ] && [ "$author" != "dependabot[bot]" ]; then
+            exit 0
+          fi
+
+          is_draft="$(echo "$details" | jq -r '.isDraft')"
+          if [ "$is_draft" = "true" ]; then
+            exit 0
+          fi
+
+          base_branch="$(echo "$details" | jq -r '.baseRefName')"
+          if [ "$base_branch" != "main" ]; then
+            exit 0
+          fi
+
+          if ! echo "$details" | jq -e '[.labels[].name] | index("automerge") != null' >/dev/null; then
+            exit 0
+          fi
+
+          head_ref_oid="$(echo "$details" | jq -r '.headRefOid')"
+          if [ "$head_ref_oid" != "$HEAD_SHA" ]; then
+            exit 0
+          fi
+
+          merge_state_status="$(echo "$details" | jq -r '.mergeStateStatus')"
+          if [ "$merge_state_status" != "CLEAN" ]; then
+            exit 0
+          fi
+
+          pr_url="$(echo "$details" | jq -r '.url')"
+          gh pr merge "$pr_url" --squash --delete-branch
