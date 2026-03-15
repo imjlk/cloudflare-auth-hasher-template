@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: "/"
+    labels:
+      - dependencies
     schedule:
       interval: monthly
       time: "10:00"
@@ -16,6 +18,8 @@ updates:
 
   - package-ecosystem: cargo
     directory: "/"
+    labels:
+      - dependencies
     schedule:
       interval: monthly
       time: "10:00"
@@ -30,6 +34,8 @@ updates:
 
   - package-ecosystem: github-actions
     directory: "/"
+    labels:
+      - dependencies
     schedule:
       interval: monthly
       time: "10:00"
