@@ -27,37 +27,13 @@ jobs:
     if: github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Apply auto-merge label for eligible updates
+      - name: Apply auto-merge label by default
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
-          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
         run: |
           set -euo pipefail
-
-          eligible=false
-          case "$UPDATE_TYPE" in
-            version-update:semver-minor|version-update:semver-patch)
-              eligible=true
-              ;;
-          esac
-
-          if echo "$DEPENDENCY_NAMES" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -Fxq "wrangler"; then
-            eligible=false
-          fi
-
-          if [ "$eligible" = true ]; then
-            gh pr edit "$PR_URL" --add-label "automerge"
-          else
-            gh pr edit "$PR_URL" --remove-label "automerge" || true
-          fi
+          gh pr edit "$PR_URL" --add-label "automerge"
 
   merge-candidate:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
@@ -97,6 +73,10 @@ jobs:
           fi
 
           if ! echo "$details" | jq -e '[.labels[].name] | index("automerge") != null' >/dev/null; then
+            exit 0
+          fi
+
+          if echo "$details" | jq -e '[.labels[].name] | index("hold") != null' >/dev/null; then
             exit 0
           fi
 
