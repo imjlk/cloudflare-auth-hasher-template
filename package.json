@@ -23,13 +23,13 @@
     "types:examples": "node ./scripts/generate-example-types.mjs"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
-    "tsx": "^4.20.3",
-    "typescript": "^6.0.2",
-    "vitest": "^4.1.0",
-    "wrangler": "^4.73.0"
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7",
+    "wrangler": "^4.95.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.59.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.60.4"
   }
 }
