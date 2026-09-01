@@ -12,7 +12,7 @@ license = "MIT"
 repository = "https://github.com/imjlk/cloudflare-auth-hasher-template"
 
 [workspace.dependencies]
-argon2 = "0.5"
+argon2 = "0.6"
 getrandom = { version = "0.2", features = ["js"] }
 hex = "0.4"
 js-sys = "0.3"
